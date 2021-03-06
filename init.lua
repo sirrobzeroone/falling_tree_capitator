@@ -15,76 +15,74 @@
 -- 										Original Code Oilboi                                     --
 --                                         License GPLV2                                         --
 ---------------------------------------------------------------------------------------------------
+
+local modname = minetest.get_current_modname()
+local modpath = minetest.get_modpath(modname)
+local S = minetest.get_translator(modname)
+
+-----------------------------------------------------
+--                    Tree Config                  --
+-----------------------------------------------------
+dofile(modpath .. "/i_tree_config_default.lua")
+dofile(modpath .. "/i_tree_config_moretrees.lua")
+
+-----------------------------------------------------
 bvav_settings = {}
 bvav_settings.attach_scaling = 30
 bvav_settings.scaling = 0.667
 
 -----------------------------------------------------
---                    Tree Config                  --
------------------------------------------------------
---h  == tree trunk height
---t  == trunk type, s == single, x == crossed, a == asymmetric eg palm
---w  == tree leaves width
---bx == branch max relative to top eg 1 == +1 higher than top of tree
---bn == branch min relative to top eg 1 == -1 below top of tree
---bw == branch width relative to trunk eg 1 == +1 & -1 out from each side
---lv == leaves name eg "default:leaves" must be supplied.
---ft == 0 == no fruit/nuts/attached, "name:of_node" == yes fruit/nuts/attached
---ftx == fruit max above trunk top
---ftn == fruit min below trunk top
-tree_config = {
-				["default:tree"]               = {["h"] = 5, ["t"] = "s",["w"] = 3 ,["bx"] = 1,["bn"] = 1, ["bw"] = 1, ["lv"] = "default:leaves"             ,["ft"] = "default:apple"        ,["ftx"] = 1, ["ftn"] = 3},
-				["default:aspen_tree"]         = {["h"] = 11,["t"] = "s",["w"] = 3 ,["bx"] = 0,["bn"] = 0, ["bw"] = 0, ["lv"] = "default:aspen_leaves"       ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-				["default:pine_tree"]          = {["h"] = 13,["t"] = "s",["w"] = 3 ,["bx"] = 0,["bn"] = 0, ["bw"] = 0, ["lv"] = "default:pine_needles"       ,["ft"] = "default:snow"         ,["ftx"] = 1, ["ftn"] = 4},
-				["default:jungletree"]         = {["h"] = 13,["t"] = "s",["w"] = 2 ,["bx"] = 1,["bn"] = 5, ["bw"] = 1, ["lv"] = "default:jungleleaves"       ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-				["default:acacia_tree"]        = {["h"] = 5, ["t"] = "s",["w"] = 5 ,["bx"] = 2,["bn"] = 0, ["bw"] = 2, ["lv"] = "default:acacia_leaves"      ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-				["moretrees:beech_trunk"]      = {["h"] = 8, ["t"] = "s",["w"] = 8 ,["bx"] = 1,["bn"] = 2, ["bw"] = 2, ["lv"] = "moretrees:beech_leaves"     ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-				["moretrees:apple_tree_trunk"] = {["h"] = 8, ["t"] = "s",["w"] = 10,["bx"] = 1,["bn"] = 5, ["bw"] = 7, ["lv"] = "moretrees:apple_tree_leaves",["ft"] = "default:apple"        ,["ftx"] = 2, ["ftn"] = 6},
-				["moretrees:oak_trunk"]        = {["h"] = 22,["t"] = "x",["w"] = 14,["bx"] = 2,["bn"] = 16,["bw"] = 26,["lv"] = "moretrees:oak_leaves"       ,["ft"] = "moretrees:acorn"      ,["ftx"] = 1, ["ftn"] = 18},
-				["moretrees:poplar_trunk"]     = {["h"] = 24,["t"] = "s",["w"] = 4 ,["bx"] = 0,["bn"] = 0, ["bw"] = 0, ["lv"] = "moretrees:poplar_leaves"    ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-				["moretrees:sequoia_trunk"]    = {["h"] = 40,["t"] = "x",["w"] = 8 ,["bx"] = 4,["bn"] = 40,["bw"] = 8, ["lv"] = "moretrees:sequoia_leaves"   ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},				
-				["moretrees:birch_trunk"]      = {["h"] = 24,["t"] = "s",["w"] = 7 ,["bx"] = 3,["bn"] = 20,["bw"] = 5, ["lv"] = "moretrees:birch_leaves"     ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-		      --["moretrees:palm_trunk"]       = {["h"] = 11,["t"] = "a",["w"] = 10,["bx"] = 6,["bn"] = 0, ["bw"] = 4, ["lv"] = "moretrees:palm_leaves"      ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-				["moretrees:spruce_trunk"]     = {["h"] = 36,["t"] = "x",["w"] = 8 ,["bx"] = 3,["bn"] = 30,["bw"] = 7, ["lv"] = "moretrees:spruce_leaves"    ,["ft"] = "moretrees:spruce_cone",["ftx"] = 1, ["ftn"] = 30},
-				["moretrees:cedar_trunk"]      = {["h"] = 24,["t"] = "s",["w"] = 9 ,["bx"] = 1,["bn"] = 18,["bw"] = 7, ["lv"] = "moretrees:cedar_leaves"     ,["ft"] = "moretrees:cedar_cone" ,["ftx"] = 1, ["ftn"] = 20},
-				["moretrees:willow_trunk"]     = {["h"] = 15,["t"] = "x",["w"] = 12,["bx"] = 3,["bn"] = 14,["bw"] = 11,["lv"] = "moretrees:willow_leaves"    ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},
-		      --["moretrees:fir_trunk"]        = {["h"] = 15,["t"] = "s",["w"] = 12,["bx"] = 3,["bn"] = 14,["bw"] = 11,["lv"] = "moretrees:willow_leaves"    ,["ft"] = "moretrees:fir_cone"   ,["ftx"] = 0, ["ftn"] = 0}				
-			  }
-
------------------------------------------------------
 --            Tree override on_dig                 --
 -----------------------------------------------------
-for k,v in pairs(tree_config) do
-
-	if minetest.registered_nodes[k] then
-		minetest.debug(k)
-		minetest.override_item(k,
+for tree_name,def in pairs(tree_config) do
+	if minetest.registered_nodes[tree_name] then
+		minetest.debug(tree_name)
+		minetest.override_item(tree_name,
 			{
-			on_dig = function(pos, node, digger)			
-				bvav_create_vessel(pos,minetest.facedir_to_dir(minetest.dir_to_facedir(minetest.yaw_to_dir(digger:get_look_horizontal()+(math.pi/2)))),k,node,digger)		
+			on_dig = function(pos, node, digger)
+				local dir = minetest.facedir_to_dir(minetest.dir_to_facedir(minetest.yaw_to_dir(digger:get_look_horizontal()+(math.pi/2))))
+				bvav_create_vessel(pos,dir,tree_name,node,digger)		
 			end,	
 		})
 	end
 end
 
 ----------------------------------------------------
-function minetest.throw_item(pos, item)
+--     Function: Throw Chopped Tree Items         -- 
+----------------------------------------------------
+function minetest.throw_item(pos, item, dir, height)
 	-- Take item in any format
 	local stack = ItemStack(item)
 	local obj = minetest.add_entity(pos, "__builtin:item")
+	local pos_f = {x=-1, y=3, z=-1}
+	local pos_t = {x=2, y=6, z=2}
 	-- Don't use obj if it couldn't be added to the map.
 	if obj then
-		obj:get_luaentity():set_item(stack:to_string())
-		local x=math.random(-4,4)*math.random()
-		local y=math.random(3,6)
-		local z=math.random(-4,4)*math.random()
+		obj:get_luaentity():set_item(stack:to_string())			
+			if dir.x > 0 then
+				pos_t.z = -1.25*height
+				
+			elseif dir.x < 0 then
+				pos_t.z = 1.25*height	
+				
+			elseif dir.z > 0 then
+				pos_t.x = 1.25*height
+				
+			else 
+				pos_t.x = -1.25*height
+			end		
+		local x=math.random(pos_f.x,pos_t.x)*math.random()
+		local y=math.random(pos_f.y,pos_t.y)
+		local z=math.random(pos_f.z,pos_t.z)*math.random()
 		obj:setvelocity({x=x, y=y, z=z})
 	end
 	return obj
 end
 
-
-minetest.register_entity("treecapitator:tree_element", {
+----------------------------------------------------
+--               Tree Entity Setup                -- 
+----------------------------------------------------
+minetest.register_entity("falling_tree_capitator:tree_element", {
 	initial_properties = {
 		physical = true,
 		collide_with_objects = false,
@@ -132,26 +130,73 @@ minetest.register_entity("treecapitator:tree_element", {
 	end,
 	rotation = vector.new(0,0,0),
 	on_step = function(self, dtime)
+		
 		if self.rotator and self.rotate_dir then
 			local current_rot = self.object:get_rotation()
 			
+			-- Working out what proportion of items to throw
+			
 			if math.abs(current_rot.x) > math.pi/2 or math.abs(current_rot.z) > math.pi/2 then
-				for i = 1,self.tree do
+				for i = 1,self.logs do
 					local pos = self.object:get_pos()
-					minetest.throw_item(pos,{name=self.node.name})
+					minetest.throw_item(pos,{name=self.node.name},self.rotate_dir,tree_config[self.node.name].th)
 				end
-				for i = 1,self.leaves/8 do
+				
+				local total_leaf = 0
+				if type(tree_config[self.node.name].lv) == "table" then
+					for k,v in pairs(tree_config[self.node.name].lv) do
+						local leaf_cnt = self[v]
+						total_leaf = total_leaf+leaf_cnt
+						
+						for i = 1,leaf_cnt/8 do
+							local pos = self.object:get_pos()
+							minetest.throw_item(pos,{name=v},self.rotate_dir,tree_config[self.node.name].th)
+						end
+						
+					end				
+				else
+					total_leaf = self.leaf
+						for i = 1,self.leaf/8 do
+							local pos = self.object:get_pos()
+							minetest.throw_item(pos,{name=tree_config[self.node.name].lv},self.rotate_dir,tree_config[self.node.name].th)
+						end				
+				end
+								
+				for i = 1,total_leaf/8 do
 					local pos = self.object:get_pos()
-					minetest.throw_item(pos,{name=self.leaves_name})
+					minetest.throw_item(pos,{name="default:stick"},self.rotate_dir,tree_config[self.node.name].th)
 				end
-				for i = 1,self.leaves/8 do
+				
+				for i = 1,total_leaf/20 do
 					local pos = self.object:get_pos()
-					minetest.throw_item(pos,{name="default:stick"})
+					local node_name = self.node.name
+					local sap_name
+					--Quick workaround for apple and rubber and jungle....
+					if self.node.name == "moretrees:apple_tree_trunk" then
+						sap_name = "moretrees:apple_tree_sapling"
+					elseif self.node.name == "moretrees:rubber_tree_trunk" then
+						  sap_name = "moretrees:rubber_tree_sapling"
+					elseif self.node.name == "moretrees:jungletree_trunk" then
+						  sap_name = "moretrees:jungletree_sapling"
+					else
+					
+						local split_name = string.split(node_name, ":")
+						local sap_part = split_name[2]
+						local sap_replace = {["tree"] = "sapling",["trunk"] = "sapling"}
+						
+						for f,r in pairs(sap_replace) do
+							sap_part = string.gsub (sap_part, tostring(f), r)
+						end	
+						sap_name = split_name[1]..":"..sap_part
+					end
+					
+					minetest.throw_item(pos,{name=sap_name},self.rotate_dir,tree_config[self.node.name].th)
 				end
+				
 				if tree_config[self.node.name].ft ~= 0 then
-					for i = 1,self.fruit do
+					for i = 1,self.frut do
 						local pos = self.object:get_pos()
-						minetest.throw_item(pos,{name= tree_config[self.node.name].ft})
+						minetest.throw_item(pos,{name= tree_config[self.node.name].ft},self.rotate_dir,tree_config[self.node.name].th)
 					end
 				end
 				minetest.sound_play("tree_thud",{pos=self.object:get_pos()})
@@ -174,125 +219,364 @@ minetest.register_entity("treecapitator:tree_element", {
 
 
 function spawn_bvav_element(p, node)
-	local obj = core.add_entity(p, "treecapitator:tree_element")
+	local obj = core.add_entity(p, "falling_tree_capitator:tree_element")
 	obj:get_luaentity():set_node(node)
 	return obj
 end
 
 
-function bvav_create_vessel(pos,dir,tree_type,node,digger)
+function bvav_create_vessel(pos,dir,tree_name,node,digger)
 	local parent	
 	local top_y = 0
 	local h_chk = 0
-	local tree_h = tree_config[tree_type].h
-	local tree_t = tree_config[tree_type].t
-	local tree_w = tree_config[tree_type].w
-	local br_min = tree_config[tree_type].bn
-	local br_max = tree_config[tree_type].bx
-	local br_wid = tree_config[tree_type].bw
-	local lv_typ = tree_config[tree_type].lv
-	local ft_nam = tree_config[tree_type].ft
-	local ft_max = tree_config[tree_type].ftx
-	local ft_min = tree_config[tree_type].ftn
-	local fall = false
+	local pos_cut = pos
+	local pos_top
 	local x_pos
 	local pos2 = pos
+	local fall = false
+	local first_log = false
+	local trunk_pieces
+	local tree_h = tree_config[tree_name].th
+	local tree_t = tree_config[tree_name].tt
+	local leaf_n = tree_config[tree_name].lv
+	local leaf_w = tree_config[tree_name].lw
+	local leaf_h = tree_config[tree_name].lh
+	local brch_h = tree_config[tree_name].bx
+	local brch_l = tree_config[tree_name].bn
+	local brch_w = tree_config[tree_name].bw
+	local frut_n = tree_config[tree_name].ft
+	local frut_h = tree_config[tree_name].fx
+	local frut_l = tree_config[tree_name].fn
+
+--[[-------------------------------------------------
+--  Work out Trunk type were a tree maybe any "a"  --
+-----------------------------------------------------
+There are 4 main trunk types single, double, cross and triple(rare), we need
+to work out on the 1st trunk block cut what type of trunk type we have, once 
+this is found the remaining trunk pieces @ the same y have there type written into their meta
+data.
+
+All trunk types fit into a shaped grid as below - Cutting/Target node being marked
+with a T and numbers moving outwards.
+						
+					+---+---+---+---+---+
+					| 5 | 4 | 3 | 4 | 5 |
+					+---+---+---+---+---+
+					| 4 | 2 | 1 | 2 | 4 |
+					+---+---+---+---+---+
+					| 3 | 1 | T | 1 | 3 |
+					+---+---+---+---+---+
+					| 4 | 2 | 1 | 2 | 4 |
+					+---+---+---+---+---+
+					| 5 | 4 | 3 | 4 | 5 |
+					+---+---+---+---+---+
+
+The above and below assume a trunk is intact ie no missing nodes when created			    
+
+Logic for Double trunk 2x2
+The player must always be cutting from a corner for a double trunk the remaining 3 will 
+always be a T,1,1,2
+
+Logic for Crossed trunk 3x3 in + shape
+The player must always be cutting from an end node, nodes will be T,1,2,2,3 
+
+Logic for Triple trunk 3x3 solid square
+The player must always be cutting from a corner or a middle side block patterns:
+T,1,1,2,3,3,4,4,5 or T,1,1,1,2,2,3,4,4 
+
+If none of the above are true then assume single trunk even though this may result in some
+large trees being treated as singles.
+
+Array is assembled as standard cartesian coords (x=x,z=y) - the array provides a top down view
+of the 5x5 area with the cut node occuping what would be 0,0 on small cartesian graph
+
+	Grid Above							Plus/Minus X/Z							  Array Pos Num
++---+---+---+---+---+--+---------+---------+--------+---------+---------+--+----+----+----+----+----+
+| 5 | 4 | 3 | 4 | 5 |  | -2x +2z | -1x +2z | 0x +2z | +1x +2z | +2x +2z |  | 21 | 22 | 23 | 24 | 25 |
++---+---+---+---+---+--+---------+---------+--------+---------+---------+--+----+----+----+----+----+
+| 4 | 2 | 1 | 2 | 4 |  | -2x +1z | -1x +1z | 0x +1z | +1x +1z | +2x +1z |  | 16 | 17 | 18 | 19 | 20 |
++---+---+---+---+---+--+---------+---------+--------+---------+---------+--+----+----+----+----+----+
+| 3 | 1 | T | 1 | 3 |  | -2x 0z  | -1x 0z  | 0x 0z  | +1x 0z  | +2x 0z  |  | 11 | 12 | 13 | 14 | 15 |
++---+---+---+---+---+--+---------+---------+--------+---------+---------+--+----+----+----+----+----+
+| 4 | 2 | 1 | 2 | 4 |  | -2x -1z | -1x -1z | 0x -1z | +1x -1z | +2x -1z |  |  6 |  7 |  8 |  9 | 10 |
++---+---+---+---+---+--+---------+---------+--------+---------+---------+--+----+----+----+----+----+
+| 5 | 4 | 3 | 4 | 5 |  | -2x -2z | -1x -2z | 0x -2z | +1x -2z | +2x -2z |  |  1 |  2 |  3 |  4 |  5 |
++---+---+---+---+---+--+---------+---------+--------+---------+---------+--+----+----+----+----+----+ 
+		
+The values are fed into the array from bottom left corner to top right so:
+
+ -2x -2z == position 1
+ +2x +2z == position 25
+  0x  0z == position 13 (cut/target node)
+  
+If a double tree was growing with no other trees around it which occupied from 0x0z to +1x+1z 
+relative to true position then:
+
+cross_arr[14] == position stored
+cross_arr[18] == position stored
+cross_arr[19] == position stored
+all other array values would == 0
+
+The array created stores pos values of a section plane for all tree/log/trunk pieces that match
+the cut tree/log/trunk piece name
+
+*Note to save/reuse of code I also push the triple, cross and double trees through this code as
+it simplifies checks later on.
+ 
+]]--	
+	if tree_config[tree_name].tt ~= "s" then
+		local node_meta = minetest.get_meta(pos)
+
+		if node_meta:get_string("fall_tree_cap") == "" then   -- first node cut if not single
+			first_log = true
+			local offset_val = {     --Bottom Left \/
+								{["x"] = -2, ["z"] = -2},{["x"] = -1, ["z"] = -2},{["x"] = 0, ["z"] = -2},{["x"] = 1, ["z"] = -2},{["x"] = 2, ["z"] = -2},
+								{["x"] = -2, ["z"] = -1},{["x"] = -1, ["z"] = -1},{["x"] = 0, ["z"] = -1},{["x"] = 1, ["z"] = -1},{["x"] = 2, ["z"] = -1},
+								{["x"] = -2, ["z"] = 0} ,{["x"] = -1, ["z"] = 0} ,{["x"] = 0, ["z"] = 0} ,{["x"] = 1, ["z"] = 0} ,{["x"] = 2, ["z"] = 0},
+								{["x"] = -2, ["z"] = 1} ,{["x"] = -1, ["z"] = 1} ,{["x"] = 0, ["z"] = 1} ,{["x"] = 1, ["z"] = 1} ,{["x"] = 2, ["z"] = 1},
+								{["x"] = -2, ["z"] = 2} ,{["x"] = -1, ["z"] = 2} ,{["x"] = 0, ["z"] = 2} ,{["x"] = 1, ["z"] = 2} ,{["x"] = 2, ["z"] = 2},
+							   }                                                                                                     -- Top Right /\			
+			local dbl_trk ={{8,9,14},{7,8,12},{12,17,18},{14,18,19}}           -- array positions for valid double trunk
+			local crs_trk ={{14,9,15,19},{18,17,19,23},{12,7,11,17},{8,3,7,9}} -- as above cross trunk/1st value center of trunk
+			local trp_trk ={{9,3,4,5,8,10,14,15},{19,14,15,18,20,23,24,25},
+							{17,11,12,16,18,21,22,23},{7,1,2,3,6,8,11,12}, 
+							{12,6,7,8,11,16,17,18},{14,8,9,10,15,18,19,20},
+							{18,12,14,17,19,22,23,24},{8,2,3,4,7,9,12,14}}      -- as above triple trunk/1st value center of trunk
+			local cross_arr = {}
+			
+			-- Assemble our cross section array when a match is found position is stored else 0
+			for k,off in pairs(offset_val) do				
+				local n_name = minetest.get_node({x=pos.x+off.x,y=pos.y,z=pos.z+off.z}).name
+				
+				if n_name == tree_name then
+					table.insert(cross_arr, {x=pos.x+off.x,y=pos.y,z=pos.z+off.z})
+				else
+					table.insert(cross_arr, 0)
+				end				
+			end
+		
+		-- Check from largest trunk size to smallest trunk size
+			if tree_config[tree_name].tt == "a" or tree_config[tree_name].tt == "t" then
+				for k,v in pairs(trp_trk) do			
+					if type(cross_arr[v[1]]) =="table" and 
+					   type(cross_arr[v[2]]) =="table" and
+					   type(cross_arr[v[3]]) =="table" and
+					   type(cross_arr[v[4]]) =="table" and
+					   type(cross_arr[v[5]]) =="table" and
+					   type(cross_arr[v[6]]) =="table" and
+					   type(cross_arr[v[7]]) =="table" and
+					   type(cross_arr[v[8]]) =="table" then
+					   
+					   trunk_pieces = {cross_arr[v[1]],cross_arr[v[2]],cross_arr[v[3]],
+									   cross_arr[v[4]],cross_arr[v[5]],cross_arr[v[6]],
+									   cross_arr[v[7]],cross_arr[v[8]],pos,["type"]="t"}
+					end   
+				end
+			end
+
+			if type(trunk_pieces) ~= "table" and (tree_config[tree_name].tt == "a" or tree_config[tree_name].tt == "x")then
+				for k,v in pairs(crs_trk) do
+					if type(cross_arr[v[1]]) =="table" and 
+					   type(cross_arr[v[2]]) =="table" and
+					   type(cross_arr[v[3]]) =="table" and
+					   type(cross_arr[v[4]]) =="table" then
+					   
+					   trunk_pieces = {cross_arr[v[1]],cross_arr[v[2]],cross_arr[v[3]],
+									   cross_arr[v[4]],pos,["type"]="x"}
+					end   
+				end						
+			end
+			
+			if type(trunk_pieces) ~= "table" and (tree_config[tree_name].tt == "a" or tree_config[tree_name].tt == "d")  then			
+				for k,v in pairs(dbl_trk) do			
+					if type(cross_arr[v[1]]) =="table" and 
+					   type(cross_arr[v[2]]) =="table" and 
+					   type(cross_arr[v[3]]) =="table" then
+					   
+					   trunk_pieces = {cross_arr[v[1]],cross_arr[v[2]],cross_arr[v[3]],pos,["type"]="d"}
+					end   
+				end
+			end
+			
+			if type(trunk_pieces) ~= "table" then
+				trunk_pieces = {["type"]="s"}
+				tree_t = "s"
+
+			end
+			
+			if (tree_config[tree_name].tt == "a" and trunk_pieces.type ~= "s") or 
+			   trunk_pieces.type ~= "s" then   -- "s", "d", "x", "t"; whats already set initially
+			  local tree = tree_name.."_"..trunk_pieces.type
+			  
+			  if tree_config[tree] == nil then
+				tree = tree_name
+			  end
+			  
+					tree_h = tree_config[tree].th
+					tree_t = tree_config[tree].tt
+					leaf_n = tree_config[tree].lv
+					leaf_w = tree_config[tree].lw
+					leaf_h = tree_config[tree].lh
+					brch_h = tree_config[tree].bx
+					brch_l = tree_config[tree].bn
+					brch_w = tree_config[tree].bw
+					frut_n = tree_config[tree].ft
+					frut_h = tree_config[tree].fx
+					frut_l = tree_config[tree].fn
+					
+				-- write related node positions to all nodes meta plus tree trunk type,  
+				-- skip ["type"] field using ipairs as not a position
+				for k,pos in ipairs(trunk_pieces) do					
+					local n_meta = minetest.get_meta(pos)
+						  n_meta:set_string("fall_tree_cap",minetest.serialize(trunk_pieces))						  
+				end			
+			end			
+		else
+			local temp_p_t = node_meta:get_string("fall_tree_cap")
+			local rel_pos2 = minetest.deserialize(temp_p_t)			
+			local tree = tree_name.."_"..rel_pos2.type
+			
+			if tree_config[tree] == nil then
+				tree = tree_name
+			end
+			
+				tree_h = tree_config[tree].th
+				tree_t = tree_config[tree].tt
+				leaf_n = tree_config[tree].lv
+				leaf_w = tree_config[tree].lw
+				leaf_h = tree_config[tree].lh
+				brch_h = tree_config[tree].bx
+				brch_l = tree_config[tree].bn
+				brch_w = tree_config[tree].bw
+				frut_n = tree_config[tree].ft
+				frut_h = tree_config[tree].fx
+				frut_l = tree_config[tree].fn	
+		end
+	end	
+							    -- name   
+	local tree_parts = {["leaf"]={leaf_n,leaf_h,pos_cut.y,leaf_w},
+					    ["logs"]={tree_name,brch_h,brch_l,brch_w},
+						["frut"]={frut_n,frut_h,frut_l,leaf_w}
+					   }
+
+-----------------------------------------------------
+--         Get middle of trunk for X & T           --
+-----------------------------------------------------
+	if tree_t == "x" or tree_t == "t" then 
+		
+		local t_pos
+		
+		if first_log then
+			t_pos = trunk_pieces
+		else
+			local n_meta = minetest.get_meta(pos)
+			local temp_p_t = n_meta:get_string("fall_tree_cap")
+			t_pos = minetest.deserialize(temp_p_t)
+		end
+			t_pos.type = nil
+			
+			local x_max = t_pos[1].x
+			local z_max = t_pos[1].z
+			local x_min = t_pos[1].x
+			local z_min = t_pos[1].z
+
+				for k,v in pairs(t_pos) do
+
+					if v.x > x_max then
+						x_max = v.x
+					end
+
+					if v.x < x_min then
+						x_min = v.x
+					end
+
+					if v.z > z_max then
+						z_max = v.z
+					end
+
+					if v.z < z_min then
+						z_min = v.z
+					end			
+				end	
+				
+				local x_temp = (x_max+x_min)/2
+				local z_temp = (z_max+z_min)/2
+				x_pos = {x=x_temp,y=pos.y,z=z_temp}	
+	end
+	
 -----------------------------------------------------
 --         Get Tree Height for later check         --
 -----------------------------------------------------
-	if tree_t == "a" then
-		for y = 0,tree_h do
-			local p_pos = vector.new(pos2.x,pos2.y+y,pos2.z)
-			minetest.chat_send_all(dump(p_pos))
-			local node = minetest.get_node(p_pos).name
-					
-				if node == tree_type then
-					h_chk = y
-				else
-					local a_chk = minetest.find_nodes_in_area({x=p_pos.x-1,y=p_pos.y,z=p_pos.z-1},{x=p_pos.x+1,y=p_pos.y,z=p_pos.z+1}, {tree_type})
-					minetest.chat_send_all(#a_chk..dump(a_chk[1]))
-					if #a_chk == 1 then
-						h_chk = y
-						pos2 = {x=a_chk[1].x,y=pos2.y,z=a_chk[1].z}
-					
-					elseif #a_chk > 1 then
-						minetest.log("info", "[mod]Treecapitator: asymmetric tree multiple nodes found")
-						h_chk = y						
-					end
-					
-				end		
+
+	for y = 0,tree_h do		
+		local t_pos
+		
+		if tree_t == "x" or tree_t == "t"  then
+			t_pos = vector.new(x_pos.x,pos.y+y,x_pos.z)
+		else
+			t_pos = vector.new(pos.x,pos.y+y,pos.z)
 		end	
 	
-	else
-		for y = 0,tree_h do
-			local p_pos = vector.new(pos.x,pos.y+y,pos.z)
-			local node = minetest.get_node(p_pos).name
-					
-				if node == tree_type then
-					h_chk = y		
-				end		
-		end
+		local node = minetest.get_node(t_pos).name
+			if node == tree_name then
+				h_chk = y
+				pos_top = t_pos				
+			end	
 	end
---minetest.chat_send_all("high = "..h_chk)
+	
+	if pos_top == nil then	
+		if tree_t == "x" or tree_t == "t"  then
+			pos_top = vector.new(x_pos.x,pos.y,x_pos.z)
+		else
+			pos_top = vector.new(pos.x,pos.y,pos.z)
+		end	
+	
+	end
 
 -----------------------------------------------------
 --         Get Tree Leaves for later check         --
 -----------------------------------------------------
-local h_pos = vector.new(pos.x,pos.y+h_chk,pos.z)
-local check_leaf = minetest.find_nodes_in_area({x=h_pos.x-tree_w,y=h_pos.y-h_chk,z=h_pos.z-tree_w},{x=h_pos.x+tree_w,y=h_pos.y+2,z=h_pos.z+tree_w}, {lv_typ})
---minetest.chat_send_all("leaves = "..#check_leaf)
+	local l_pos
+	if tree_t == "x" or tree_t == "t"  then
+		l_pos = vector.new(x_pos.x,x_pos.y,x_pos.z)
+	else
+		l_pos = vector.new(pos.x,pos.y,pos.z)
+	end
+
+	local check_leaf = minetest.find_nodes_in_area({x=l_pos.x-leaf_w,y=l_pos.y,z=l_pos.z-leaf_w},
+											   {x=pos_top.x+leaf_w,y=pos_top.y+leaf_h,z=pos_top.z+leaf_w}, 
+											   leaf_n)
 
 -----------------------------------------------------
---         Trunk thickness check                   --
+--       Trunk thickness/last log check            --
 -----------------------------------------------------
-	if tree_t == "s" or tree_t == "a" then
+	if tree_t == "s" then
 		fall = true
 		
-	elseif tree_t == "x" and #check_leaf ~= 0 and h_chk > 1 then
-		local t_check_1 = minetest.find_nodes_in_area({x=pos.x-1, y=pos.y, z=pos.z-1}, {x=pos.x+1, y=pos.y, z=pos.z+1}, {tree_type})
-		local t_check_2 = minetest.find_nodes_in_area({x=pos.x-2, y=pos.y, z=pos.z}, {x=pos.x+2, y=pos.y, z=pos.z}, {tree_type})
-		local t_check_3 = minetest.find_nodes_in_area({x=pos.x, y=pos.y, z=pos.z-2}, {x=pos.x, y=pos.y, z=pos.z+2}, {tree_type})
-		--minetest.chat_send_all ("inside_x".." "..#t_check_1.." "..#t_check_2.." "..#t_check_3)
-		if #t_check_1 == 1 and #t_check_2 == 1 and #t_check_3 == 1 then
-			fall = true
+	else		
+		local last_log = true			
+			if not first_log then                                -- first_log == true, no change to anything and no checks
 			
-			-- Locate X trunk center for use lower down as x_pos
-				local t_cent = minetest.find_nodes_in_area({x=pos.x-2, y=pos.y+2, z=pos.z-2}, {x=pos.x+2, y=pos.y+2, z=pos.z+2}, {tree_type})
-				
-				if t_cent[1].x == nil then
-					fall = false
-				else
-				
-					local x_max = t_cent[1].x
-					local z_max = t_cent[1].z
-					local x_min = t_cent[1].x
-					local z_min = t_cent[1].z
+				local n_meta = minetest.get_meta(pos)
+				local temp_p_t = n_meta:get_string("fall_tree_cap")
+				local t_pos = minetest.deserialize(temp_p_t)
+				t_pos.type = nil
+					for k,pos2 in pairs(t_pos) do
+						if pos2.x ~= pos.x or
+						   pos2.y ~= pos.y or
+						   pos2.z ~= pos.z then  -- remove nodes own pos reference
 
-						for k,v in pairs(t_cent) do
-
-							if v.x > x_max then
-							x_max = v.x
-							end
-
-							if v.x < x_min then
-							x_min = v.x
-							end
-
-							if v.z > z_max then
-							z_max = v.z
-							end
-
-							if v.z < z_min then
-							z_min = v.z
-							end
-					
-						end	
-					
-					local x_temp = (x_max+x_min)/2
-					local z_temp = (z_max+z_min)/2
-					x_pos = {x=x_temp,y=pos.y,z=z_temp}
-				end
-		end
+							local t_node = minetest.get_node(pos2).name					
+							if t_node == tree_name then					
+								last_log = false
+							end					
+						end								
+					end			
+			end
+			
+			if last_log and not first_log then
+				fall = true
+			end
 	end
 
 -----------------------------------------------------
@@ -301,100 +585,110 @@ local check_leaf = minetest.find_nodes_in_area({x=h_pos.x-tree_w,y=h_pos.y-h_chk
 --    may use logs in structures                   --
 -----------------------------------------------------
 
-	if h_chk <= 1 or
-	   #check_leaf == 0 or 
-	   fall == false then
-		--minetest.chat_send_all("check")
+	if fall == false or 
+	   h_chk <= 1 or
+	   #check_leaf == 0 then	   
+	   -- Does normal node dig
 		minetest.node_dig(pos, node, digger)
-
-	else	
-		--destroy and get center of tree leaves
+	else			
+	-----------------------------------------------------
+	--                Main Tree Trunk Code             --
+	-----------------------------------------------------
 		
-		--Trunk code
-		for y = 0,tree_h do
-			local p_pos
-				if tree_t == "x" then
-					p_pos = vector.new(x_pos.x,pos.y+y,x_pos.z)
-				else
-					p_pos = vector.new(pos.x,pos.y+y,pos.z)
-				end
-			local node = minetest.get_node(p_pos).name
-			
-			
-			if node == tree_type then
-				top_y = y		
-				minetest.remove_node(p_pos)	
-
+		local n_meta = minetest.get_meta(pos)
+		local temp_p_t = n_meta:get_string("fall_tree_cap")
+		local z_pos = minetest.deserialize(temp_p_t)	
+		local t_cent
+		
+		if z_pos == nil then
+			z_pos = {pos}
+			t_cent = pos
+		else
+			t_cent = z_pos[1]
+		end
 				
-				if not parent then
-					parent = spawn_bvav_element(p_pos, {name=tree_type})
-					parent:get_luaentity().rotator = true
-					parent:get_luaentity().rotate_dir = dir
-					parent:get_luaentity().tree = 1
-					parent:get_luaentity().leaves = 0
-					parent:get_luaentity().fruit = 0
-				else
-					local child = spawn_bvav_element(p_pos, {name=tree_type})
+		for y = 0,h_chk do
+				--minetest.remove_node(pos)
+				for k,v in ipairs(z_pos) do    -- dodges key == "type"
+						
+						local npos_t = vector.new({x=v.x,y=v.y+y,z=v.z})
+						local node = minetest.get_node(npos_t).name
+						
+						if node == tree_name or
+						   (y == 0 and k == 1) then
+							minetest.remove_node(npos_t)	
+							
+							if not parent then
+								parent = spawn_bvav_element(npos_t, {name=tree_name})
+								parent:get_luaentity().rotator = true
+								parent:get_luaentity().rotate_dir = dir
+								parent:get_luaentity().logs = 1
+								parent:get_luaentity().leaf = 0
+								parent:get_luaentity().frut = 0
+
+								
+							else
+								local child = spawn_bvav_element(npos_t, {name=tree_name})
+								child:get_luaentity().parent = parent			
+								child:get_luaentity().relative = {x=(npos_t.x - t_cent.x )* bvav_settings.attach_scaling,
+																  y=y * bvav_settings.attach_scaling,
+																  z=(npos_t.z-t_cent.z)* bvav_settings.attach_scaling}
+								child:set_attach(parent, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
+								child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
+								parent:get_luaentity().logs = parent:get_luaentity().logs + 1
+							end
+						end
+				end
+		end
+
+	-----------------------------------------------------
+	--    Tree Parts; Leaves, Branches and fruit       --
+	-----------------------------------------------------
+	for k,v in pairs(tree_parts) do			
+			local tp_pos
+			if tree_t == "x" or tree_t == "t" then
+				tp_pos = vector.new(x_pos.x,x_pos.y,x_pos.z)
+			else
+				tp_pos = vector.new(pos.x,pos.y,pos.z)
+			end
+			
+			if type(v[1]) =="table" then			
+				for k2,v2 in pairs(v[1])do
+					local parts_table = minetest.find_nodes_in_area({x=tp_pos.x-v[4],y=tp_pos.y,z=tp_pos.z-v[4]},{x=tp_pos.x+v[4],y=pos_top.y+v[2],z=tp_pos.z+v[4]}, v2)
+					parent:get_luaentity()[v2] = 0
+					
+					for _,l_pos in pairs(parts_table) do
+						minetest.remove_node(l_pos)
+
+						local x = l_pos.x - tp_pos.x
+						local y = l_pos.y - tp_pos.y
+						local z = l_pos.z - tp_pos.z
+						local child = spawn_bvav_element(l_pos, {name=v2})
+						child:get_luaentity().parent = parent			
+						child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
+						child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
+						child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
+						parent:get_luaentity()[v2] = parent:get_luaentity()[v2] + 1
+					end	
+				end			
+			else
+				local parts_table = minetest.find_nodes_in_area({x=tp_pos.x-v[4],y=tp_pos.y,z=tp_pos.z-v[4]},{x=tp_pos.x+v[4],y=pos_top.y+v[2],z=tp_pos.z+v[4]}, v[1])
+
+				for _,l_pos in pairs(parts_table) do
+					minetest.remove_node(l_pos)
+
+					local x = l_pos.x - tp_pos.x
+					local y = l_pos.y - tp_pos.y
+					local z = l_pos.z - tp_pos.z
+					local child = spawn_bvav_element(l_pos, {name=v[1]})
 					child:get_luaentity().parent = parent			
-					child:get_luaentity().relative = {x=0,y=y * bvav_settings.attach_scaling,z=0}
-					child:set_attach(parent, "", {x=0,y=y * bvav_settings.attach_scaling,z=0}, {x=0,y=0,z=0})
+					child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
+					child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
 					child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
-					parent:get_luaentity().tree = parent:get_luaentity().tree + 1
+					parent:get_luaentity()[k] = parent:get_luaentity()[k] + 1
 				end
 			end
-		end
-		
-		-- Leaf code		
-		local n_pos = vector.new(pos.x,pos.y+top_y,pos.z)
-		local leaf_table = minetest.find_nodes_in_area({x=n_pos.x-tree_w,y=n_pos.y-top_y,z=n_pos.z-tree_w},{x=n_pos.x+tree_w,y=n_pos.y+4,z=n_pos.z+tree_w}, {lv_typ})
-		for _,l_pos in pairs(leaf_table) do
-			minetest.remove_node(l_pos)
-			
-			local x = l_pos.x - pos.x
-			local y = l_pos.y - pos.y
-			local z = l_pos.z - pos.z
-			local child = spawn_bvav_element(l_pos, {name=lv_typ})
-			child:get_luaentity().parent = parent			
-			child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
-			child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
-			child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
-			parent:get_luaentity().leaves = parent:get_luaentity().leaves + 1
-			parent:get_luaentity().leaves_name = lv_typ
-		end
-		
-		--Branch code
-		local leaf_table = minetest.find_nodes_in_area({x=n_pos.x-br_wid,y=n_pos.y-br_min,z=n_pos.z-br_wid},{x=n_pos.x+br_wid,y=n_pos.y+br_max,z=n_pos.z+br_wid},{tree_type})
-		for _,l_pos in pairs(leaf_table) do
-			minetest.remove_node(l_pos)
-			
-			local x = l_pos.x - pos.x
-			local y = l_pos.y - pos.y
-			local z = l_pos.z - pos.z
-			local child = spawn_bvav_element(l_pos, {name=tree_type})
-			child:get_luaentity().parent = parent			
-			child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
-			child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
-			child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
-			parent:get_luaentity().tree = parent:get_luaentity().tree + 1
-		end
-		
-		--Fruit/Attached code
-		if ft_nam ~= 0 then
-			local leaf_table = minetest.find_nodes_in_area({x=n_pos.x-tree_w,y=n_pos.y-ft_min,z=n_pos.z-tree_w},{x=n_pos.x+tree_w,y=n_pos.y+ft_max,z=n_pos.z+tree_w},{ft_nam})
-			for _,l_pos in pairs(leaf_table) do
-				minetest.remove_node(l_pos)
-				
-				local x = l_pos.x - pos.x
-				local y = l_pos.y - pos.y
-				local z = l_pos.z - pos.z
-				local child = spawn_bvav_element(l_pos, {name=ft_nam})
-				child:get_luaentity().parent = parent			
-				child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
-				child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
-				child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
-				parent:get_luaentity().fruit = parent:get_luaentity().fruit + 1
-			end	
-		
+
 		end
 				
 		minetest.sound_play("tree_fall",{object=parent})
