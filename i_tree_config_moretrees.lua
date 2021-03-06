@@ -23,7 +23,8 @@ tree_config["moretrees:beech_trunk"] = {
 									["bw"] = 2,
 									["ft"] = 0,
 									["fx"] = 0,
-									["fn"] = 0
+									["fn"] = 0,
+									["sp"] = "moretrees:beech_sapling"
 									}
 									
 tree_config["moretrees:apple_tree_trunk"] = {
@@ -37,7 +38,8 @@ tree_config["moretrees:apple_tree_trunk"] = {
 									["bw"] = 7,
 									["ft"] = "default:apple",
 									["fx"] = 2,
-									["fn"] = 6
+									["fn"] = 6,
+									["sp"] = "moretrees:apple_tree_sapling"
 									}
 			 
 tree_config["moretrees:oak_trunk"] = {
@@ -51,7 +53,8 @@ tree_config["moretrees:oak_trunk"] = {
 									["bw"] = 10,
 									["ft"] = "moretrees:acorn",
 									["fx"] = 1,
-									["fn"] = 18
+									["fn"] = 18,
+									["sp"] = "moretrees:oak_sapling"
 									}
 									
 tree_config["moretrees:poplar_trunk"] = {
@@ -65,7 +68,8 @@ tree_config["moretrees:poplar_trunk"] = {
 									["bw"] = 0,
 									["ft"] = 0,
 									["fx"] = 0,
-									["fn"] = 0
+									["fn"] = 0,
+									["sp"] = "moretrees:poplar_sapling"
 									}
 									
 tree_config["moretrees:sequoia_trunk"] = {
@@ -79,7 +83,8 @@ tree_config["moretrees:sequoia_trunk"] = {
 									["bw"] = 8,
 									["ft"] = 0,
 									["fx"] = 0,
-									["fn"] = 0
+									["fn"] = 0,
+									["sp"] = "moretrees:sequoia_sapling"
 									}
 									
 tree_config["moretrees:birch_trunk"] = {
@@ -93,7 +98,8 @@ tree_config["moretrees:birch_trunk"] = {
 									["bw"] = 5,
 									["ft"] = 0,
 									["fx"] = 0,
-									["fn"] = 0
+									["fn"] = 0,
+									["sp"] = "moretrees:birch_sapling"
 									}
 
 tree_config["moretrees:spruce_trunk"] = {
@@ -107,7 +113,8 @@ tree_config["moretrees:spruce_trunk"] = {
 									["bw"] = 6,
 									["ft"] = "moretrees:spruce_cone",
 									["fx"] = 1,
-									["fn"] = 28
+									["fn"] = 28,
+									["sp"] = "moretrees:spruce_sapling"
 									}
 
 tree_config["moretrees:cedar_trunk"] = {
@@ -121,7 +128,8 @@ tree_config["moretrees:cedar_trunk"] = {
 									["bw"] = 7,
 									["ft"] = "moretrees:cedar_cone",
 									["fx"] = 1,
-									["fn"] = 18
+									["fn"] = 18,
+									["sp"] = "moretrees:cedar_sapling"
 									}
 
 tree_config["moretrees:willow_trunk"] = {
@@ -135,7 +143,8 @@ tree_config["moretrees:willow_trunk"] = {
 									["bw"] = 11,
 									["ft"] = 0,
 									["fx"] = 0,
-									["fn"] = 0
+									["fn"] = 0,
+									["sp"] = "moretrees:willow_sapling"
 									}	
 
 tree_config["moretrees:rubber_tree_trunk"] = {
@@ -149,7 +158,8 @@ tree_config["moretrees:rubber_tree_trunk"] = {
 									["bw"] = 6,
 									["ft"] = 0,
 									["fx"] = 0,
-									["fn"] = 0
+									["fn"] = 0,
+									["sp"] = "moretrees:rubber_tree_sapling"
 									}
 
 tree_config["moretrees:jungletree_trunk"] = {
@@ -163,7 +173,8 @@ tree_config["moretrees:jungletree_trunk"] = {
 									["bw"] = 3,
 									["ft"] = "vines:vine",
 									["fx"] = 2,
-									["fn"] = 11
+									["fn"] = 11,
+									["sp"] = "moretrees:jungletree_sapling"
 									}
 
 tree_config["moretrees:jungletree_trunk_d"] = {
@@ -177,7 +188,8 @@ tree_config["moretrees:jungletree_trunk_d"] = {
 									["bw"] = 6,
 									["ft"] = "vines:vine",
 									["fx"] = 2,
-									["fn"] = 34
+									["fn"] = 34,
+									["sp"] = "moretrees:jungletree_sapling"
 									}
 
 tree_config["moretrees:jungletree_trunk_x"] = {
@@ -191,7 +203,8 @@ tree_config["moretrees:jungletree_trunk_x"] = {
 									["bw"] = 6,
 									["ft"] = "vines:vine",
 									["fx"] = 2,
-									["fn"] = 24
+									["fn"] = 24,
+									["sp"] = "moretrees:jungletree_sapling"
 									}
 
 tree_config["moretrees:jungletree_trunk_t"] = {
@@ -205,7 +218,8 @@ tree_config["moretrees:jungletree_trunk_t"] = {
 									["bw"] = 6,
 									["ft"] = "vines:vine",
 									["fx"] = 2,
-									["fn"] = 34
+									["fn"] = 34,
+									["sp"] = "moretrees:jungletree_sapling"
 									}									
 --tree_config = {			
 --		      ["moretrees:palm_trunk"]       = {["h"] = 11,["t"] = "a",["w"] = 10,["bx"] = 6,["bn"] = 0, ["bw"] = 4, ["lv"] = "moretrees:palm_leaves"      ,["ft"] = 0                      ,["ftx"] = 0, ["ftn"] = 0},

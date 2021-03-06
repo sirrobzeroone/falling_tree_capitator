@@ -84,15 +84,15 @@ end
 ----------------------------------------------------
 minetest.register_entity("falling_tree_capitator:tree_element", {
 	initial_properties = {
-		physical = true,
-		collide_with_objects = false,
-		pointable = false,
-		collisionbox = {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
-		visual = "wielditem",
-		textures = {},
-		automatic_face_movement_dir = 0.0,
-		visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}
-	},
+						physical = true,
+						collide_with_objects = false,
+						pointable = false,
+						collisionbox = {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
+						visual = "wielditem",
+						textures = {},
+						automatic_face_movement_dir = 0.0,
+						visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}
+						},
 
 	node = {},
 
@@ -134,71 +134,49 @@ minetest.register_entity("falling_tree_capitator:tree_element", {
 		if self.rotator and self.rotate_dir then
 			local current_rot = self.object:get_rotation()
 			
-			-- Working out what proportion of items to throw
+			-- Throw items on ground that made up parts of the tree:
+			-- logs, leaves, sticks,saplings and fruit/attachments
 			
 			if math.abs(current_rot.x) > math.pi/2 or math.abs(current_rot.z) > math.pi/2 then
-				for i = 1,self.logs do
-					local pos = self.object:get_pos()
-					minetest.throw_item(pos,{name=self.node.name},self.rotate_dir,tree_config[self.node.name].th)
-				end
+			
+				-- Create a table of all items that may need throwing as result of the
+				-- tree being cut down. This includes adding sticks(1/10 leaves) and saplings(1/20 leaves)
+				-- note The below only throws 1/10 of the actual leaf nodes in the tree.
+				local throw_parts={}				
 				
-				local total_leaf = 0
 				if type(tree_config[self.node.name].lv) == "table" then
-					for k,v in pairs(tree_config[self.node.name].lv) do
-						local leaf_cnt = self[v]
-						total_leaf = total_leaf+leaf_cnt
-						
-						for i = 1,leaf_cnt/8 do
-							local pos = self.object:get_pos()
-							minetest.throw_item(pos,{name=v},self.rotate_dir,tree_config[self.node.name].th)
-						end
-						
-					end				
-				else
-					total_leaf = self.leaf
-						for i = 1,self.leaf/8 do
-							local pos = self.object:get_pos()
-							minetest.throw_item(pos,{name=tree_config[self.node.name].lv},self.rotate_dir,tree_config[self.node.name].th)
-						end				
-				end
-								
-				for i = 1,total_leaf/8 do
-					local pos = self.object:get_pos()
-					minetest.throw_item(pos,{name="default:stick"},self.rotate_dir,tree_config[self.node.name].th)
-				end
-				
-				for i = 1,total_leaf/20 do
-					local pos = self.object:get_pos()
-					local node_name = self.node.name
-					local sap_name
-					--Quick workaround for apple and rubber and jungle....
-					if self.node.name == "moretrees:apple_tree_trunk" then
-						sap_name = "moretrees:apple_tree_sapling"
-					elseif self.node.name == "moretrees:rubber_tree_trunk" then
-						  sap_name = "moretrees:rubber_tree_sapling"
-					elseif self.node.name == "moretrees:jungletree_trunk" then
-						  sap_name = "moretrees:jungletree_sapling"
-					else
+					local leaf_total = 0
+					throw_parts[self.node.name] = self.logs
+					throw_parts[tree_config[self.node.name].ft] = self.frut
 					
-						local split_name = string.split(node_name, ":")
-						local sap_part = split_name[2]
-						local sap_replace = {["tree"] = "sapling",["trunk"] = "sapling"}
-						
-						for f,r in pairs(sap_replace) do
-							sap_part = string.gsub (sap_part, tostring(f), r)
+						for k,leaf_name in pairs(tree_config[self.node.name].lv) do
+							-- self[leaf_name] stores count of that type 
+							-- of leaf from when entity was created
+							leaf_total = leaf_total + self[leaf_name]
+							throw_parts[leaf_name]=self[leaf_name]/10
 						end	
-						sap_name = split_name[1]..":"..sap_part
-					end
 					
-					minetest.throw_item(pos,{name=sap_name},self.rotate_dir,tree_config[self.node.name].th)
+					throw_parts[tree_config[self.node.name].sp] = leaf_total/20						
+					throw_parts["default:stick"] = leaf_total/10
+				else
+					throw_parts = {[self.node.name]                 = self.logs,
+								   [tree_config[self.node.name].lv] = self.leaf/10,
+								   [tree_config[self.node.name].sp] = self.leaf/20,
+								   ["default:stick"]                = self.leaf/10,								   
+								   [tree_config[self.node.name].ft] = self.frut}				
 				end
-				
-				if tree_config[self.node.name].ft ~= 0 then
-					for i = 1,self.frut do
-						local pos = self.object:get_pos()
-						minetest.throw_item(pos,{name= tree_config[self.node.name].ft},self.rotate_dir,tree_config[self.node.name].th)
+
+				-- Loop through the above table and use throw_item to distribute the items.
+					for node_name,node_num in pairs(throw_parts) do
+					    -- "if" misses fruit if the name is set to "0"
+						if node_name ~= 0 then
+							for i = 1,node_num do
+								local pos = self.object:get_pos()
+								minetest.throw_item(pos,{name=node_name},self.rotate_dir,tree_config[self.node.name].th)
+							end
+						end					
 					end
-				end
+
 				minetest.sound_play("tree_thud",{pos=self.object:get_pos()})
 				self.object:remove()
 			end
