@@ -1,10 +1,10 @@
 
 
-local d_name																	-- Decoration name
-local size																		-- Schematic dimensions, standard pos format eg (x=5,y=12,z=5)
-local leaves = {}																-- Table to store leaf node names
-local fruit  = {}																-- Table to store fruit/atatched node names
-local schem_table= {} 															-- Table to store text conversion of schematic
+local d_name                                                                    -- Decoration name
+local size                                                                      -- Schematic dimensions, standard pos format eg (x=5,y=12,z=5)
+local leaves = {}                                                               -- Table to store leaf node names
+local fruit  = {}                                                               -- Table to store fruit/atatched node names
+local schem_table= {}                                                           -- Table to store text conversion of schematic
 
 y = 0
 
@@ -14,7 +14,7 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 		local schem_filepath = defs.schematic									-- file path to schematic mts binary file
 		local schematic = minetest.read_schematic(schem_filepath, "all") 		-- Reads in all probabilities of nodes from .mts file		
 		size = schematic.size													-- stored in standard pos format eg (x=5,y=12,z=5)
-		d_name = dec_name                                               
+		d_name = dec_name
 		local ts = ""															-- ts = (t)emporary (s)tring variable
 		local nt_name															-- Node type name used for L, T, A, F
 		local sc_lay = 1
@@ -105,17 +105,17 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 end
 
 --------------------------------------------------------------
--- A table now exists which has all targetted tree      	--
--- schematics recorded inside and structured as below:    	--
---                                                      	--
--- schem_table = {["tree_name 1"] = {[1] = Layer String,	--
---								     [2] = Layer String,	--
---                                    ...					--
---								     [5] = Layer String},	--
--- 				  ["tree_name 2"] = {[1] = Layer String,	--
---									 ...					--
---                                  }						--                  
--- 				 }											--
+-- A table now exists which has all targetted tree          --
+-- schematics recorded inside and structured as below:      --
+--                                                          --
+-- schem_table = {["tree_name 1"] = {[1] = Layer String,    --
+--                                   [2] = Layer String,    --
+--                                    ...                   --
+--                                   [5] = Layer String},   --
+--                ["tree_name 2"] = {[1] = Layer String,    --
+--                                   ...                    --
+--                                  }                       --
+--               }                                          --
 --------------------------------------------------------------
 
 for tree_name,def_str in pairs(schem_table) do
