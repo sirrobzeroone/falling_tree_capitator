@@ -1,60 +1,67 @@
 
 
-local d_name                                                                    -- Decoration name
-local size                                                                      -- Schematic dimensions, standard pos format eg (x=5,y=12,z=5)
-local leaves = {}                                                               -- Table to store leaf node names
-local fruit  = {}                                                               -- Table to store fruit/atatched node names
-local schem_table= {}                                                           -- Table to store text conversion of schematic
-local trunk
-y = 0
 
+                                                             
+local schem_table= {}                                                           -- Table to store text conversion of schematic
+
+y = 0
+--[[
+for dec_name,defs in pairs(minetest.registered_decorations) do	
+	if string.find(dec_name, "tree") then
+		minetest.debug(dec_name)
+	end
+end
+]]--
 for dec_name,defs in pairs(minetest.registered_decorations) do
-	if string.find(dec_name, "default:apple_tree") then
+	if string.find(dec_name, "tree") then
+		local d_name                                                            -- Decoration name
+		local size                                                              -- Schematic dimensions, standard pos format eg (x=5,y=12,z=5)
+		local leaves = {}                                                       -- Table to store leaf node names
+		local fruit  = {}                                                       -- Table to store fruit/atatched node names
+		local trunk = ""
+		local schematic	
 		
 		local schem_filepath = defs.schematic                                   -- file path to schematic mts binary file
-		local schematic = minetest.read_schematic(schem_filepath, "all")        -- Reads in all probabilities of nodes from .mts file
-
+		
+		if type(schem_filepath) == "table" then                                 -- some schematics stored as lua tables                           
+			schematic = schem_filepath
+		else		
+			schematic = minetest.read_schematic(schem_filepath, "all")          -- Reads in all probabilities of nodes from .mts file
+		end
 		size = schematic.size                                                   -- stored in standard pos format eg (x=5,y=12,z=5)
 		d_name = dec_name
 		local ts = ""                                                           -- ts = (t)emporary (s)tring variable
 		local nt_name                                                           -- Node type name used for L, T, A, F
 		local sc_lay = 1
-		schem_table={}
 		schem_table[d_name]={}
-		
+		local grps = {}
+		local grp = {}
+	
 		for i = 1,#schematic.data do                                            -- Read-in every defined node in schematic
-			local grp = minetest.registered_nodes[schematic.data[i].name].groups-- Get the groups our current specified schematic node has
-		
+			local temp_name = schematic.data[i].name
+			
+			if not grp[temp_name] then 
+				grps[temp_name] = minetest.registered_nodes[temp_name].groups
+				grp = grps[temp_name]                                           -- Get the groups our current specified schematic node has
+			else
+				grp = grps[temp_name]
+			
+			end
+
 			if grp.leaves == 1 then                                             -- Check Leaves
 				nt_name = "L"
-					if #leaves == 0 then                                        -- This if block adds the leaf names for later use
-						table.insert(leaves,schematic.data[i].name)             -- to table leaves
-					else
-						for k,v in pairs(leaves) do                             -- we dont need to add a leaf name multiple times
-							if v ~= schematic.data[i].name then                 -- so check if name exists if it does dont add.
-								table.insert(leaves,schematic.data[i].name)
-							end
-						
-						end
-					end
+				leaves[temp_name] = 1                                           -- Far quicker to set to key, than use a loop 
 				
 			elseif grp.tree == 1 then                                           -- Check tree/trunk/log etc
 				nt_name = "T"
-				trunk = schematic.data[i].name
-			elseif string.find(schematic.data[i].name, "air") then              -- Air has no groups so I just use the name check
+				trunk = temp_name
+				
+			elseif string.find(temp_name, "air") then                           -- Air has no groups so I just use the name check
 				nt_name = "A"
+				
 			else                                                                -- If its not one of the three above then for trees it must be fruit/attachments
 				nt_name = "F"
-					if #fruit == 0 then                                         -- This if block adds the fruit names for later use
-						table.insert(fruit,schematic.data[i].name)              -- to table fruit
-					else
-						for k,v in pairs(fruit) do                              -- we dont need to add a fruit name multiple times
-							if v ~= schematic.data[i].name then                 -- so check if name exists if it does dont add.
-								table.insert(fruit,schematic.data[i].name)
-							end
-						
-						end
-					end
+				fruit[temp_name]=1
 			end
             -------------------------------------------------------------------------------------
             --   The block of code below takes the nt_name and inserts it into schem_table     --
@@ -96,16 +103,18 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 		schem_table[d_name]["leaves"] = leaves                                  -- store leave(s) node name
 		schem_table[d_name]["fruit"] = fruit                                    -- store fruit(s) node name
 		schem_table[d_name]["trunk"] = trunk                                    -- store trunk node name
-		
-			--[[minetest.debug(dump(schem_table[d_name]["leaves"]))              -- for debugging assistance
-				minetest.debug(dump(schem_table[d_name]["fruit"]))
-			for k,v in ipairs(schem_table[d_name]) do
-				minetest.debug(d_name.." X/Z Slice: Y= "..k.." of "..schem_table[d_name].size.y)
-				minetest.debug("\n"..v)
-		 end]]--
-		
+--[[			
+	minetest.debug(dump(schem_table[d_name]["leaves"]))                         -- for debugging assistance
+	minetest.debug(dump(schem_table[d_name]["fruit"]))
+	for k,v in ipairs(schem_table[d_name]) do
+		minetest.debug(d_name.." X/Z Slice: Y= "..k.." of "..schem_table[d_name].size.y)
+		minetest.debug("\n"..v)
+	end
+]]--		 
+	
 	end
 end
+
 
 --------------------------------------------------------------
 -- A table now exists which has all targetted tree          --
@@ -121,19 +130,20 @@ end
 --               }                                          --
 --------------------------------------------------------------
 
-for tree_name,def_str in pairs(schem_table) do
 
+for tree_name,def_str in pairs(schem_table) do
+minetest.debug(tree_name)
 -- set variables for registration
 local tree = {}	
 tree.th = 0                                                 -- th == tree trunk height max
 tree.tt = "s"                                               -- tt == trunk type, s == single, x == crossed, d == double, t== triple, a = all, s == special eg palm
-tree.lv = ""                                                -- lv == leaves name eg "default:leaves"
+tree.lv = {}                                                -- lv == leaves name eg "default:leaves"
 tree.lw = 0                                                 -- lw == leaves max (radius) from center trunk eg 1 == +1 & -1 out from each side
 tree.lh = 0                                                 -- lh == leaves max height above trunk height max
 tree.bx = 0                                                 -- bx == branch max relative to top eg 1 == +1 above trunk height max
 tree.bn = 0                                                 -- bn == branch min relative to top eg 1 == -1 below trunk height max
 tree.bw = 0                                                 -- bw == branch max (radius) from center trunk eg 1 == +1 & -1 out from each side
-tree.ft = 0                                                 -- ft == 0 == no fruit/nuts/attached, "name:of_node" == yes fruit/nuts/attached
+tree.ft = {}                                                -- ft == 0 == no fruit/nuts/attached, "name:of_node" == yes fruit/nuts/attached
 tree.fx = 0                                                 -- fx == fruit max above trunk height max
 tree.fn = 0                                                 -- fn == fruit min below trunk height max
 tree.sp = ""                                                -- sp == sapling name
@@ -167,36 +177,6 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 				end		
 			end
 	end
-
----------------------------------
---  workout trunk height = th  --
----------------------------------
-for y_hgt = 1,def_str.size.y do
-	local temp = def_str[y_hgt]
-	temp = string.gsub(temp, "\n", "")                  -- remove \n  leave n to show end of row
-	temp = string.gsub(temp, " ", "")                   -- remove spaces
-                                                        -- The above means middle of trunk is in the middle of the string
-	if (def_str.size.x % 2 == 0) then                   -- Check for odd or even X/Z dimensions if odd single mid node, even 4 mid nodes.
-		local mid_node = (def_str.size.x*def_str.size.z)/2-- Calculate even mid nodes - use 2d array
-		local mid_hgh = mid_node + 1
-		local mid_low = mid_node
-
-		if b_wide[y_hgt][mid_hgh][mid_hgh] == "T" and   -- Check the 4 center locations for T
-		   b_wide[y_hgt][mid_hgh][mid_low] == "T" and   -- note hopefully no-one puts a single trunk tree in an even sized mts
-		   b_wide[y_hgt][mid_low][mid_hgh] == "T" and
-		   b_wide[y_hgt][mid_low][mid_low] == "T" then
-		   
-			tree.th = y_hgt
-		end   	
-	else
-			
-		local mid_node = math.ceil((def_str.size.x*def_str.size.z)/2)       -- calulate odd mid node number
-			if string.sub(temp, mid_node, mid_node) == "T" then
-				tree.th = y_hgt
-			end	
-	end
-end
-
 ---------------------------------
 --   workout tree type = tt    --
 ---------------------------------
@@ -214,18 +194,44 @@ end
 	else
 		tree.tt = "s"
 	end
+	
+---------------------------------
+--  workout trunk height = th  --
+---------------------------------
+	local center={}
+	local cnt = 1
+	
+	for kz,rowz in pairs(b_wide[3]) do              -- same height as tree.tt
+		for kx,rowx in pairs(rowz) do
+			if rowx == "T" then
+				center[cnt] = {}
+				center[cnt].x = kx                  -- store x
+				center[cnt].z = kz                  -- store z
+				cnt = cnt+1
+			end
+		end
+	end
+
+	for y_hgt = 3,def_str.size.y do                -- start same height as tree.tt
+		local cnt = 0
+		for k,v in pairs(center)do
+			if b_wide[y_hgt][v.z][v.x] == "T" then
+				cnt = cnt+1
+			end
+		end
+		
+		if cnt == #center then
+			tree.th = y_hgt
+		end
+	end
 
 ---------------------------------
 --     leave name(s) = lv      --
 ---------------------------------
-	if #def_str.leaves == 1 then
-		tree.lv = def_str.leaves[1]
-	else
-		for k,v in pairs(leaves) do
-		 table.insert(tree.lv, v) 
-		end
+	for name,v in pairs(def_str.leaves) do
+		table.insert(tree.lv, name) 
 	end
- 
+
 ---------------------------------
 --      leave width = lw       --
 ---------------------------------
@@ -305,8 +311,8 @@ end
 --    Branch min width = bw    --
 ---------------------------------
 	for k,node_type in pairs(b_wide) do
-		for zi=1,size.z do
-			for xi=1, size.x do			
+		for zi=1,def_str.size.z do
+			for xi=1, def_str.size.x do			
 			
 				local branch_check = node_type[zi][xi]
 
@@ -331,21 +337,14 @@ end
 ---------------------------------
 --       Fruit name = ft       --
 ---------------------------------
-	if #def_str.fruit == 1 then
-		tree.ft = def_str.fruit[1]
-		
-	elseif #def_str.fruit > 1 then
-		
-		for k,ft_name in pairs(def_str.fruit) do
-			table.insert(tree.ft, ft_name) 
-		end
-		
+	for name,v in pairs(def_str.fruit) do
+		table.insert(tree.ft, name) 
 	end
 
 ---------------------------------
 --    Fruit max height = fx    --
 ---------------------------------
-	if tree.ft ~= 0 then	
+	if #tree.ft == 0 then	
 		for i = tree.th,def_str.size.y do
 			local _, t_count = string.gsub(def_str[i], "F", "")
 			if t_count > 0 then
@@ -359,7 +358,7 @@ end
 ---------------------------------
 --    Fruit min height = fn    --
 ---------------------------------
-	if tree.ft ~= 0 then
+	if #tree.ft == 0 then
 		tree.fn = def_str.size.y
 		
 		for i = 1,def_str.size.y do	
@@ -374,37 +373,59 @@ end
 ---------------------------------
 --      Sapling name = sp      --
 ---------------------------------
-	local drops = minetest.registered_nodes[tree.lv].drop
+	
+	if type(tree.lv) == "table" then
+		for k,leaf in pairs(tree.lv) do
+			local drops = minetest.registered_nodes[leaf].drop
 
-	for k,v in pairs(drops.items) do
+			if drops ~= nil then
 
-		local item_name = v.items[1]	
-		local item_name_grp = minetest.registered_nodes[item_name].groups
+				for k,v in pairs(drops.items) do
 
-			if item_name_grp.sapling == 1 then
-				tree.sp = item_name 
-			end
+					local item_name = v.items[1]	
+					local item_name_grp = minetest.registered_nodes[item_name].groups
+
+						if item_name_grp.sapling == 1 then
+							tree.sp = item_name 
+						end
+				end
+			end	
+		end
+		
+	else
+		local drops = minetest.registered_nodes[tree.lv].drop	
+		
+		for k,v in pairs(drops.items) do
+
+			local item_name = v.items[1]	
+			local item_name_grp = minetest.registered_nodes[item_name].groups
+
+				if item_name_grp.sapling == 1 then
+					tree.sp = item_name 
+				end
+		end
+	
 	end
---[[                                                            -- debugging assistance
+                                                       -- debugging assistance
 	minetest.debug(tree_name.." "..def_str.trunk)    
 	minetest.debug("tree height: "..tree.th)
 	minetest.debug("tree type: "..tree.tt)
-	minetest.debug("tree leaves: "..tree.lv)
+	minetest.debug("tree leaves: "..minetest.serialize(tree.lv))
 	minetest.debug("tree leaf width: "..tree.lw)
 	minetest.debug("tree leaf height: "..tree.lh)
 	minetest.debug("tree branch above trunk top: "..tree.bx)
 	minetest.debug("tree branch below trunk top: "..tree.bn)
 	minetest.debug("tree branch wide: "..tree.bw)
-	minetest.debug("tree fruit: "..tree.ft)
+	minetest.debug("tree fruit: "..minetest.serialize(tree.ft))
 	minetest.debug("tree fruit above trunk top: "..tree.fx)
 	minetest.debug("tree fruit below trunk top: "..tree.fn)
 	minetest.debug("tree sapling: "..tree.sp)
-]]--
+
 -----------------------------------------------------------
 -- Check if tree_name and tree.tt are already registered --
 --    and either update values or register new record    --
 -----------------------------------------------------------
-
+--[[
 	if tree_name ~= def_str.trunk then                        -- log/trunk name and registered decoration name eg default:tree = logs but decoration called default:apple_tree
 		ref_name = def_str.trunk                              -- Since player will cut log/trunk we must reference using log/trunk name
 	else
@@ -429,7 +450,7 @@ end
 
 
 
-
+]]--
 end
 
 
