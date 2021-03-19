@@ -23,8 +23,12 @@ local S = minetest.get_translator(modname)
 -----------------------------------------------------
 --                    Tree Config                  --
 -----------------------------------------------------
-dofile(modpath .. "/i_tree_config_default.lua")
-dofile(modpath .. "/i_tree_config_moretrees.lua")
+tree_config = {}
+--dofile(modpath .. "/i_tree_config_default.lua")
+--dofile(modpath .. "/i_tree_config_moretrees.lua")
+dofile(modpath .. "/i_register_schematic_trees.lua")
+
+minetest.debug("db: "..dump(tree_config))
 
 -----------------------------------------------------
 bvav_settings = {}
@@ -36,7 +40,6 @@ bvav_settings.scaling = 0.667
 -----------------------------------------------------
 for tree_name,def in pairs(tree_config) do
 	if minetest.registered_nodes[tree_name] then
-		minetest.debug(tree_name)
 		minetest.override_item(tree_name,
 			{
 			on_dig = function(pos, node, digger)
@@ -142,29 +145,35 @@ minetest.register_entity("falling_tree_capitator:tree_element", {
 				-- Create a table of all items that may need throwing as result of the
 				-- tree being cut down. This includes adding sticks(1/10 leaves) and saplings(1/20 leaves)
 				-- note The below only throws 1/10 of the actual leaf nodes in the tree.
-				local throw_parts={}				
+				local throw_ref_table = {["logs"] = self.logs,
+				                         ["leaf"] = tree_config[self.node.name].lv,
+										 ["fruit"] = tree_config[self.node.name].ft}
+				local throw_parts = {}				
+				local throw_parts2={}
+				local leaf_total = 0
 				
-				if type(tree_config[self.node.name].lv) == "table" then
-					local leaf_total = 0
-					throw_parts[self.node.name] = self.logs
-					throw_parts[tree_config[self.node.name].ft] = self.frut
-					
-						for k,leaf_name in pairs(tree_config[self.node.name].lv) do
-							-- self[leaf_name] stores count of that type 
-							-- of leaf from when entity was created
-							leaf_total = leaf_total + self[leaf_name]
-							throw_parts[leaf_name]=self[leaf_name]/10
-						end	
-					
-					throw_parts[tree_config[self.node.name].sp] = leaf_total/20						
-					throw_parts["default:stick"] = leaf_total/10
-				else
-					throw_parts = {[self.node.name]                 = self.logs,
-								   [tree_config[self.node.name].lv] = self.leaf/10,
-								   [tree_config[self.node.name].sp] = self.leaf/20,
-								   ["default:stick"]                = self.leaf/10,								   
-								   [tree_config[self.node.name].ft] = self.frut}				
+				for k,obj_tab in pairs(throw_ref_table) do
+				
+					if type(obj_tab) == "table" then
+						for k2,name in pairs(obj_tab) do						
+							
+							if k == "leaf" then
+								leaf_total = leaf_total + self[name]
+								throw_parts[name]=self[name]/10
+								
+							else 
+								throw_parts[name]=self[name]
+							end
+							
+						end
+										
+					else
+						throw_parts[self.node.name]=obj_tab
+					end
 				end
+				
+				throw_parts[tree_config[self.node.name].sp] = leaf_total/20						
+				throw_parts["default:stick"] = leaf_total/10
 
 				-- Loop through the above table and use throw_item to distribute the items.
 					for node_name,node_num in pairs(throw_parts) do

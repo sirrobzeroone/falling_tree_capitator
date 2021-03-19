@@ -20,7 +20,7 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 		local fruit  = {}                                                       -- Table to store fruit/atatched node names
 		local trunk = ""
 		local schematic	
-		
+		--minetest.debug(dec_name)
 		local schem_filepath = defs.schematic                                   -- file path to schematic mts binary file
 		
 		if type(schem_filepath) == "table" then                                 -- some schematics stored as lua tables                           
@@ -132,7 +132,6 @@ end
 
 
 for tree_name,def_str in pairs(schem_table) do
-minetest.debug(tree_name)
 -- set variables for registration
 local tree = {}	
 tree.th = 0                                                 -- th == tree trunk height max
@@ -152,7 +151,7 @@ local ref_name
 local b_wide = {}
 local cnx = math.ceil(def_str.size.x/2) -- center_node_x
 local cnz = math.ceil(def_str.size.z/2) -- center_node_z
-
+local th_start = math.ceil(def_str.size.y * 0.25)
 ------------------------------------------------------------------------------
 --  Create a proper 2d table (array) of values from def_str for this tree   --
 ------------------------------------------------------------------------------
@@ -180,7 +179,7 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 ---------------------------------
 --   workout tree type = tt    --
 ---------------------------------
-	local _, t_count = string.gsub(def_str[3], "T", "")     -- Magic line found on Internet - Finds all "T" in string and rtns count
+	local _, t_count = string.gsub(def_str[th_start], "T", "")     -- Magic line found on Internet - Finds all "T" in string and rtns count
                                                             -- layer 3 selected to avoid any tree bottoms/bases
 	if t_count == 4 then                                    -- may need to improve this later. 
 		tree.tt = "d"
@@ -201,7 +200,7 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 	local center={}
 	local cnt = 1
 	
-	for kz,rowz in pairs(b_wide[3]) do              -- same height as tree.tt
+	for kz,rowz in pairs(b_wide[th_start]) do              -- same height as tree.tt
 		for kx,rowx in pairs(rowz) do
 			if rowx == "T" then
 				center[cnt] = {}
@@ -212,7 +211,8 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 		end
 	end
 
-	for y_hgt = 3,def_str.size.y do                -- start same height as tree.tt
+	local th_cnt = th_start
+	for y_hgt = th_cnt,def_str.size.y do                -- start same height as tree.tt
 		local cnt = 0
 		for k,v in pairs(center)do
 			if b_wide[y_hgt][v.z][v.x] == "T" then
@@ -344,7 +344,7 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 ---------------------------------
 --    Fruit max height = fx    --
 ---------------------------------
-	if #tree.ft == 0 then	
+	if #tree.ft ~= 0 then
 		for i = tree.th,def_str.size.y do
 			local _, t_count = string.gsub(def_str[i], "F", "")
 			if t_count > 0 then
@@ -358,7 +358,7 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 ---------------------------------
 --    Fruit min height = fn    --
 ---------------------------------
-	if #tree.ft == 0 then
+	if #tree.ft ~= 0 then
 		tree.fn = def_str.size.y
 		
 		for i = 1,def_str.size.y do	
@@ -406,51 +406,149 @@ local cnz = math.ceil(def_str.size.z/2) -- center_node_z
 		end
 	
 	end
-                                                       -- debugging assistance
-	minetest.debug(tree_name.." "..def_str.trunk)    
-	minetest.debug("tree height: "..tree.th)
-	minetest.debug("tree type: "..tree.tt)
-	minetest.debug("tree leaves: "..minetest.serialize(tree.lv))
-	minetest.debug("tree leaf width: "..tree.lw)
-	minetest.debug("tree leaf height: "..tree.lh)
-	minetest.debug("tree branch above trunk top: "..tree.bx)
-	minetest.debug("tree branch below trunk top: "..tree.bn)
-	minetest.debug("tree branch wide: "..tree.bw)
-	minetest.debug("tree fruit: "..minetest.serialize(tree.ft))
-	minetest.debug("tree fruit above trunk top: "..tree.fx)
-	minetest.debug("tree fruit below trunk top: "..tree.fn)
-	minetest.debug("tree sapling: "..tree.sp)
 
+	
+ -- debugging	
+ --[[
+	local tree_sum = {[def_str.trunk] = {
+									["th"] = tree.th,
+									["tt"] = tree.tt,
+									["lv"] = tree.lv,
+									["lw"] = tree.lw,
+									["lh"] = tree.lh,
+									["bx"] = tree.bx,
+									["bn"] = tree.bn,
+									["bw"] = tree.bw,
+									["ft"] = tree.ft,
+									["fx"] = tree.fx,
+									["fn"] = tree.fn,
+									["sp"] = tree.sp
+									}}
+
+ local tree_debug =""
+	 for k,v in pairs(tree_sum[def_str.trunk]) do
+ 
+		tree_debug = tree_debug.."\n"..k..":"..minetest.serialize(v)
+ 
+	end
+	 tree_debug = string.gsub(tree_debug, "return", "")
+	 minetest.debug("\n"..def_str.trunk..tree_debug) 
+]]--
 -----------------------------------------------------------
 -- Check if tree_name and tree.tt are already registered --
 --    and either update values or register new record    --
------------------------------------------------------------
---[[
-	if tree_name ~= def_str.trunk then                        -- log/trunk name and registered decoration name eg default:tree = logs but decoration called default:apple_tree
-		ref_name = def_str.trunk                              -- Since player will cut log/trunk we must reference using log/trunk name
-	else
-		ref_name = tree_name
-	end
+-----------------------------------------------------------		
 	
-	if tree_config[ref_name] then                              -- If tree already has a config record we need to check
-		local cur_ref = tree_config[ref_name]
-			if cur_ref.tt == tree.tt then                      -- tree record must be same type eg S,D,X,T
-				for k,v in pairs(cur_ref) do
+	if not tree_config[def_str.trunk] and tree.tt == "s" then                              -- If tree already has a config record we need to check
+			
+		tree_config[def_str.trunk] = {}
+		tree_config[def_str.trunk]["th"] = tree.th
+		tree_config[def_str.trunk]["tt"] = tree.tt
+		tree_config[def_str.trunk]["lv"] = tree.lv
+		tree_config[def_str.trunk]["lw"] = tree.lw
+		tree_config[def_str.trunk]["lh"] = tree.lh
+		tree_config[def_str.trunk]["bx"] = tree.bx
+		tree_config[def_str.trunk]["bn"] = tree.bn
+		tree_config[def_str.trunk]["bw"] = tree.bw
+		tree_config[def_str.trunk]["ft"] = tree.ft
+		tree_config[def_str.trunk]["fx"] = tree.fx
+		tree_config[def_str.trunk]["fn"] = tree.fn
+		tree_config[def_str.trunk]["sp"] = tree.sp
 
-					if tree[k] > v then                        -- If our new value is bigger then save new value (more conservative)
-						tree_config[ref_name][k]=tree[k]
-					end
-					
+		--minetest.debug("db: "..dump(tree_config))
+		
+	elseif tree_config[def_str.trunk] and tree.tt == "s" then
+		local rev_tab = {}
+		local fin_tab = {}
+		for k,v in pairs(tree_config[def_str.trunk]) do
+			
+			if type(v) ~= "table" then
+			
+				if tree[k] > tree_config[def_str.trunk][k] then
+			   
+			       tree_config[def_str.trunk][k] = tree[k]
+
 				end
+
+				
+			else
+				for k2,v2 in pairs(v) do       -- swap values to keys			
+					rev_tab[v2] = 1					
+				end
+				
+				for k3,v3 in pairs(tree[k]) do --insert new values as keys, anythign same will simply overwrite
+				
+				rev_tab[v3] = 1
+								
+				end
+				
+				for k4,v4 in pairs(rev_tab) do	 -- swap keys back to values			
+					table.insert(fin_tab, k4) 					
+				end	
+				
+				tree_config[def_str.trunk][k] = fin_tab	-- update config data with new values	
 			end
+		end
+		
+		
+	elseif not tree_config[def_str.trunk.."_"..tree.tt] then
+	
+		tree_config[def_str.trunk.."_"..tree.tt] = {}
+		tree_config[def_str.trunk.."_"..tree.tt]["th"] = tree.th
+		tree_config[def_str.trunk.."_"..tree.tt]["tt"] = tree.tt
+		tree_config[def_str.trunk.."_"..tree.tt]["lv"] = tree.lv
+		tree_config[def_str.trunk.."_"..tree.tt]["lw"] = tree.lw
+		tree_config[def_str.trunk.."_"..tree.tt]["lh"] = tree.lh
+		tree_config[def_str.trunk.."_"..tree.tt]["bx"] = tree.bx
+		tree_config[def_str.trunk.."_"..tree.tt]["bn"] = tree.bn
+		tree_config[def_str.trunk.."_"..tree.tt]["bw"] = tree.bw
+		tree_config[def_str.trunk.."_"..tree.tt]["ft"] = tree.ft
+		tree_config[def_str.trunk.."_"..tree.tt]["fx"] = tree.fx
+		tree_config[def_str.trunk.."_"..tree.tt]["fn"] = tree.fn
+		tree_config[def_str.trunk.."_"..tree.tt]["sp"] = tree.sp
 	
 	else
+		local count = 0
+		--[[
+		local cln_def_str_trunk = tonumber(string.sub(def_str.trunk, -1))
+		
+		if type(cln_def_str_trunk) == "number" then
+			count = cln_def_str_trunk + 1
+		end
+		]]--	
 
+		for k,v in pairs(tree_config) do
+		
+			minetest.debug(k)
+			
+			if string.find(k,def_str.trunk) then
+
+				count = count+1
+				minetest.debug(k..": "..def_str.trunk.." "..count)
+				
+			end
+		end
+		
+		
+		tree_config[def_str.trunk..count] = {}
+		tree_config[def_str.trunk..count]["th"] = tree.th
+		tree_config[def_str.trunk..count]["tt"] = tree.tt
+		tree_config[def_str.trunk..count]["lv"] = tree.lv
+		tree_config[def_str.trunk..count]["lw"] = tree.lw
+		tree_config[def_str.trunk..count]["lh"] = tree.lh
+		tree_config[def_str.trunk..count]["bx"] = tree.bx
+		tree_config[def_str.trunk..count]["bn"] = tree.bn
+		tree_config[def_str.trunk..count]["bw"] = tree.bw
+		tree_config[def_str.trunk..count]["ft"] = tree.ft
+		tree_config[def_str.trunk..count]["fx"] = tree.fx
+		tree_config[def_str.trunk..count]["fn"] = tree.fn
+		tree_config[def_str.trunk..count]["sp"] = tree.sp
+		
 	end
 
 
 
-]]--
+
 end
 
 
