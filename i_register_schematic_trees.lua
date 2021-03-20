@@ -438,35 +438,41 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 -- Check if tree_name and tree.tt are already registered --
 --    and either update values or register new record    --
 -----------------------------------------------------------		
+
+	if not tree_config[def_str.trunk] then                                   -- Check if tree top table exists if not create 
+		tree_config[def_str.trunk] = {}		
+	end 
+
 	
-	if not tree_config[def_str.trunk] and tree.tt == "s" then                              -- If tree already has a config record we need to check
-			
-		tree_config[def_str.trunk] = {}
-		tree_config[def_str.trunk]["th"] = tree.th
-		tree_config[def_str.trunk]["tt"] = tree.tt
-		tree_config[def_str.trunk]["lv"] = tree.lv
-		tree_config[def_str.trunk]["lw"] = tree.lw
-		tree_config[def_str.trunk]["lh"] = tree.lh
-		tree_config[def_str.trunk]["bx"] = tree.bx
-		tree_config[def_str.trunk]["bn"] = tree.bn
-		tree_config[def_str.trunk]["bw"] = tree.bw
-		tree_config[def_str.trunk]["ft"] = tree.ft
-		tree_config[def_str.trunk]["fx"] = tree.fx
-		tree_config[def_str.trunk]["fn"] = tree.fn
-		tree_config[def_str.trunk]["sp"] = tree.sp
+	if not tree_config[def_str.trunk][tree.tt] then                              -- If tree already has a config record we need to check
+		
+		tree_config[def_str.trunk][tree.tt] = {} 
+		tree_config[def_str.trunk][tree.tt]["th"] = tree.th
+		tree_config[def_str.trunk][tree.tt]["tt"] = tree.tt
+		tree_config[def_str.trunk][tree.tt]["lv"] = tree.lv
+		tree_config[def_str.trunk][tree.tt]["lw"] = tree.lw
+		tree_config[def_str.trunk][tree.tt]["lh"] = tree.lh
+		tree_config[def_str.trunk][tree.tt]["bx"] = tree.bx
+		tree_config[def_str.trunk][tree.tt]["bn"] = tree.bn
+		tree_config[def_str.trunk][tree.tt]["bw"] = tree.bw
+		tree_config[def_str.trunk][tree.tt]["ft"] = tree.ft
+		tree_config[def_str.trunk][tree.tt]["fx"] = tree.fx
+		tree_config[def_str.trunk][tree.tt]["fn"] = tree.fn
+		tree_config[def_str.trunk][tree.tt]["sp"] = tree.sp
 
 		--minetest.debug("db: "..dump(tree_config))
 		
-	elseif tree_config[def_str.trunk] and tree.tt == "s" then
+	elseif tree_config[def_str.trunk][tree.tt] then
 		local rev_tab = {}
 		local fin_tab = {}
-		for k,v in pairs(tree_config[def_str.trunk]) do
+		local tree_config_data = tree_config[def_str.trunk][tree.tt]
+		for k,v in pairs(tree_config_data) do
 			
 			if type(v) ~= "table" then
 			
-				if tree[k] > tree_config[def_str.trunk][k] then
+				if tree[k] > tree_config_data[k] then
 			   
-			       tree_config[def_str.trunk][k] = tree[k]
+			       tree_config_data[k] = tree[k]
 
 				end
 
@@ -486,26 +492,9 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 					table.insert(fin_tab, k4) 					
 				end	
 				
-				tree_config[def_str.trunk][k] = fin_tab	-- update config data with new values	
+				tree_config_data[k] = fin_tab	-- update config data with new values	
 			end
 		end
-		
-		
-	elseif not tree_config[def_str.trunk.."_"..tree.tt] then
-	
-		tree_config[def_str.trunk.."_"..tree.tt] = {}
-		tree_config[def_str.trunk.."_"..tree.tt]["th"] = tree.th
-		tree_config[def_str.trunk.."_"..tree.tt]["tt"] = tree.tt
-		tree_config[def_str.trunk.."_"..tree.tt]["lv"] = tree.lv
-		tree_config[def_str.trunk.."_"..tree.tt]["lw"] = tree.lw
-		tree_config[def_str.trunk.."_"..tree.tt]["lh"] = tree.lh
-		tree_config[def_str.trunk.."_"..tree.tt]["bx"] = tree.bx
-		tree_config[def_str.trunk.."_"..tree.tt]["bn"] = tree.bn
-		tree_config[def_str.trunk.."_"..tree.tt]["bw"] = tree.bw
-		tree_config[def_str.trunk.."_"..tree.tt]["ft"] = tree.ft
-		tree_config[def_str.trunk.."_"..tree.tt]["fx"] = tree.fx
-		tree_config[def_str.trunk.."_"..tree.tt]["fn"] = tree.fn
-		tree_config[def_str.trunk.."_"..tree.tt]["sp"] = tree.sp
 	
 	else
 		local count = 0
@@ -543,7 +532,7 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		tree_config[def_str.trunk..count]["fx"] = tree.fx
 		tree_config[def_str.trunk..count]["fn"] = tree.fn
 		tree_config[def_str.trunk..count]["sp"] = tree.sp
-		
+
 	end
 
 
