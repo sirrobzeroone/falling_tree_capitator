@@ -5,13 +5,13 @@
 local schem_table= {}                                                           -- Table to store text conversion of schematic
 
 y = 0
---[[
+
 for dec_name,defs in pairs(minetest.registered_decorations) do	
 	if string.find(dec_name, "tree") then
 		minetest.debug(dec_name)
 	end
 end
-]]--
+
 for dec_name,defs in pairs(minetest.registered_decorations) do
 	if string.find(dec_name, "tree") then
 		local d_name                                                            -- Decoration name
@@ -408,8 +408,8 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 	end
 
 	
- -- debugging	
- --[[
+--[[ -- debugging	
+
 	local tree_sum = {[def_str.trunk] = {
 									["th"] = tree.th,
 									["tt"] = tree.tt,
@@ -432,8 +432,8 @@ local th_start = math.ceil(def_str.size.y * 0.25)
  
 	end
 	 tree_debug = string.gsub(tree_debug, "return", "")
-	 minetest.debug("\n"..def_str.trunk..tree_debug) 
-]]--
+	 minetest.debug("\n"..def_str.trunk..tree_debug) ]]--
+
 -----------------------------------------------------------
 -- Check if tree_name and tree.tt are already registered --
 --    and either update values or register new record    --
@@ -463,11 +463,11 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		--minetest.debug("db: "..dump(tree_config))
 		
 	elseif tree_config[def_str.trunk][tree.tt] then
-		local rev_tab = {}
-		local fin_tab = {}
+
 		local tree_config_data = tree_config[def_str.trunk][tree.tt]
 		for k,v in pairs(tree_config_data) do
-			
+			local rev_tab = {}
+			local fin_tab = {}
 			if type(v) ~= "table" then
 			
 				if tree[k] > tree_config_data[k] then
