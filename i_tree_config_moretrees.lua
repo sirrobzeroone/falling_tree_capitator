@@ -146,6 +146,23 @@ falling_tree_capitator.tree_config["moretrees:date_palm_trunk"] = {
 											["fn"] = 5,
 											["sp"] = "moretrees:date_palm_sapling"
 										}
+									}	
+
+falling_tree_capitator.tree_config["moretrees:palm_trunk"] = {
+									s = {
+											["th"] = 4,
+											["tt"] = "s",
+											["lv"] = {"moretrees:palm_leaves"},
+											["lw"] = 10,
+											["lh"] = 12,
+											["bx"] = 6,
+											["bn"] = 0,
+											["bw"] = 6,
+											["ft"] = {"moretrees:coconut_0","moretrees:coconut_1","moretrees:coconut_2","moretrees:coconut_3","moretrees:coconut","moretrees:palm_fruit_trunk"},
+											["fx"] = 6,
+											["fn"] = 0,
+											["sp"] = "moretrees:palm_sapling"
+										}
 									}									
 
 falling_tree_capitator.tree_config["moretrees:spruce_trunk"] = {
