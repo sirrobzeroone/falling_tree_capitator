@@ -114,6 +114,23 @@ falling_tree_capitator.tree_config["moretrees:birch_trunk"] = {
 										}
 									}
 
+falling_tree_capitator.tree_config["moretrees:fir_trunk"] = {
+									s = {
+											["th"] = 26,
+											["tt"] = "s",
+											["lv"] = {"moretrees:fir_leaves","moretrees:fir_leaves_bright"},
+											["lw"] = 7,
+											["lh"] = 2,
+											["bx"] = 0,
+											["bn"] = 22,
+											["bw"] = 5,
+											["ft"] = {"moretrees:fir_cone"},
+											["fx"] = 1,
+											["fn"] = 22,
+											["sp"] = "moretrees:fir_sapling"
+										}
+									}
+
 falling_tree_capitator.tree_config["moretrees:spruce_trunk"] = {
 									x = {
 											["th"] = 32,
