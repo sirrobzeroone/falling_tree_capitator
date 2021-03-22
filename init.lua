@@ -269,22 +269,36 @@ it simplifies checks later on.
 		
 		 local tree = tree_name
 		 
-		tree_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].th
-		tree_t = falling_tree_capitator.tree_config[tree][trunk_pieces.type].tt
-		leaf_n = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lv
-		leaf_w = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lw
-		leaf_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lh
-		brch_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bx
-		brch_l = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bn
-		brch_w = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bw
-		frut_n = falling_tree_capitator.tree_config[tree][trunk_pieces.type].ft
-		frut_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].fx
-		frut_l = falling_tree_capitator.tree_config[tree][trunk_pieces.type].fn
-		
+		 
+		 if falling_tree_capitator.tree_config[tree][trunk_pieces.type] == nil then   -- catch any odd tree finds that dont have a config tree type that matches.
+			tree_h = 1
+			tree_t = "s"
+			leaf_n = {"falling_tree_capitator:leaf_name_place_holder"}
+			leaf_w = 1
+			leaf_h = 1
+			brch_h = 1
+			brch_l = 1
+			brch_w = 1
+			frut_n = {}
+			frut_h = 0
+			frut_l = 0		 
+		else 
+			tree_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].th
+			tree_t = falling_tree_capitator.tree_config[tree][trunk_pieces.type].tt
+			leaf_n = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lv
+			leaf_w = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lw
+			leaf_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lh
+			brch_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bx
+			brch_l = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bn
+			brch_w = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bw
+			frut_n = falling_tree_capitator.tree_config[tree][trunk_pieces.type].ft
+			frut_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].fx
+			frut_l = falling_tree_capitator.tree_config[tree][trunk_pieces.type].fn
+		end
 	-- write related node positions to all nodes meta plus tree trunk type,  
 	-- skip ["type"] field using ipairs as not a position
 		
-		if trunk_pieces.type ~= s then
+		if trunk_pieces.type ~= "s" then
 			for k,pos in ipairs(trunk_pieces) do					
 				local n_meta = minetest.get_meta(pos)
 					  n_meta:set_string("fall_tree_cap",minetest.serialize(trunk_pieces))						  

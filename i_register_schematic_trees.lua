@@ -511,41 +511,7 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		end
 	
 	else
-		local count = 0
-		--[[
-		local cln_def_str_trunk = tonumber(string.sub(def_str.trunk, -1))
-		
-		if type(cln_def_str_trunk) == "number" then
-			count = cln_def_str_trunk + 1
-		end
-		]]--	
 
-		for k,v in pairs(falling_tree_capitator.tree_config) do
-		
-			minetest.debug(k)
-			
-			if string.find(k,def_str.trunk) then
-
-				count = count+1
-				minetest.debug(k..": "..def_str.trunk.." "..count)
-				
-			end
-		end
-		
-		
-		falling_tree_capitator.tree_config[def_str.trunk..count] = {}
-		falling_tree_capitator.tree_config[def_str.trunk..count]["th"] = tree.th
-		falling_tree_capitator.tree_config[def_str.trunk..count]["tt"] = tree.tt
-		falling_tree_capitator.tree_config[def_str.trunk..count]["lv"] = tree.lv
-		falling_tree_capitator.tree_config[def_str.trunk..count]["lw"] = tree.lw
-		falling_tree_capitator.tree_config[def_str.trunk..count]["lh"] = tree.lh
-		falling_tree_capitator.tree_config[def_str.trunk..count]["bx"] = tree.bx
-		falling_tree_capitator.tree_config[def_str.trunk..count]["bn"] = tree.bn
-		falling_tree_capitator.tree_config[def_str.trunk..count]["bw"] = tree.bw
-		falling_tree_capitator.tree_config[def_str.trunk..count]["ft"] = tree.ft
-		falling_tree_capitator.tree_config[def_str.trunk..count]["fx"] = tree.fx
-		falling_tree_capitator.tree_config[def_str.trunk..count]["fn"] = tree.fn
-		falling_tree_capitator.tree_config[def_str.trunk..count]["sp"] = tree.sp
 
 	end
 
