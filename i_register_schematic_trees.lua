@@ -1,10 +1,7 @@
-
-
-
-                                                             
+----------------------------------------------------
+--        Auto Register Schematic Trees           -- 
+----------------------------------------------------                                                             
 local schem_table= {}                                                           -- Table to store text conversion of schematic
-
-y = 0
 
 --[[for dec_name,defs in pairs(minetest.registered_decorations) do	
 	if string.find(dec_name, "tree") then
@@ -48,16 +45,6 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 				
 				grps[temp_name] = minetest.registered_nodes[temp_name].groups
 				grp = grps[temp_name]                                           -- Get the groups our current specified schematic node has
-				
-				--[[old redundant code
-				if not grp[temp_name] then 
-										
-					grps[temp_name] = minetest.registered_nodes[temp_name].groups
-					grp = grps[temp_name]                                           -- Get the groups our current specified schematic node has
-				else
-					grp = grps[temp_name]
-				
-				end]]--
 
 				if grp.leaves == 1 then                                             -- Check Leaves
 					nt_name = "L"
@@ -117,14 +104,14 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 			schem_table[d_name]["leaves"] = leaves                                  -- store leave(s) node name
 			schem_table[d_name]["fruit"] = fruit                                    -- store fruit(s) node name
 			schem_table[d_name]["trunk"] = trunk                                    -- store trunk node name
-	--[[			
-		minetest.debug(dump(schem_table[d_name]["leaves"]))                         -- for debugging assistance
+			
+--[[	minetest.debug(dump(schem_table[d_name]["leaves"]))                         -- for debugging assistance
 		minetest.debug(dump(schem_table[d_name]["fruit"]))
 		for k,v in ipairs(schem_table[d_name]) do
 			minetest.debug(d_name.." X/Z Slice: Y= "..k.." of "..schem_table[d_name].size.y)
 			minetest.debug("\n"..v)
-		end
-	]]--		 
+		end]]--
+		 
 		end
 	end
 end
@@ -239,6 +226,11 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		end
 	end
 
+-- update center location as some trunks are not 
+-- centered inside schematic file
+	cnx = center[1].x
+	cnz = center[1].z
+
 ---------------------------------
 --     leave name(s) = lv      --
 ---------------------------------
@@ -324,6 +316,7 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 ---------------------------------
 --    Branch min width = bw    --
 ---------------------------------
+
 	for k,node_type in pairs(b_wide) do
 		for zi=1,def_str.size.z do
 			for xi=1, def_str.size.x do			
@@ -489,7 +482,6 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 			       tree_config_data[k] = tree[k]
 
 				end
-
 				
 			else
 				for k2,v2 in pairs(v) do       -- swap values to keys			
@@ -511,13 +503,8 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		end
 	
 	else
-
-
+		--register nothing
 	end
-
-
-
-
 end
 
 

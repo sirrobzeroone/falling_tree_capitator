@@ -30,7 +30,7 @@ falling_tree_capitator.bvav_settings.scaling = 0.667
 -----------------------------------------------------
 dofile(modpath .. "/i_register_tree_element_entity.lua")
 dofile(modpath .. "/i_register_schematic_trees.lua")
-dofile(modpath .. "/i_tree_config_moretrees.lua")
+--dofile(modpath .. "/i_tree_config_moretrees.lua")
 
 --minetest.debug("db: "..dump(falling_tree_capitator.tree_config))
 
@@ -115,7 +115,7 @@ function bvav_create_vessel(pos,dir,tree_name,node,digger)
 	local frut_l
 
 --[[-------------------------------------------------
---  Work out Trunk type were a tree maybe any "a"  --
+--    Work out Trunk type were a tree maybe any    --
 -----------------------------------------------------
 There are 4 main trunk types single, double, cross and triple(rare), we need
 to work out on the 1st trunk block cut what type of trunk type we have, once 
@@ -151,7 +151,8 @@ The player must always be cutting from a corner or a middle side block patterns:
 T,1,1,2,3,3,4,4,5 or T,1,1,1,2,2,3,4,4 
 
 If none of the above are true then assume single trunk even though this may result in some
-large trees being treated as singles.
+large trees being treated as singles - assuming we have a registered "s" for that tree if not
+then tree node is treated as an individual log/trunk node like standard MT Game behaviour.
 
 Array is assembled as standard cartesian coords (x=x,z=y) - the array provides a top down view
 of the 5x5 area with the cut node occuping what would be 0,0 on small cartesian graph
@@ -269,8 +270,10 @@ it simplifies checks later on.
 		
 		 local tree = tree_name
 		 
-		 
-		 if falling_tree_capitator.tree_config[tree][trunk_pieces.type] == nil then   -- catch any odd tree finds that dont have a config tree type that matches.
+		 -- catch any odd tree finds that dont have a config tree type that matches.
+		 -- and simply set these too default values which result in log/trunk node being
+		 -- treated as an individual node.
+		 if falling_tree_capitator.tree_config[tree][trunk_pieces.type] == nil then   
 			tree_h = 1
 			tree_t = "s"
 			leaf_n = {"falling_tree_capitator:leaf_name_place_holder"}
