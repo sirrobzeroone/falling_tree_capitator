@@ -130,6 +130,23 @@ falling_tree_capitator.tree_config["moretrees:fir_trunk"] = {
 											["sp"] = "moretrees:fir_sapling"
 										}
 									}
+									
+falling_tree_capitator.tree_config["moretrees:date_palm_trunk"] = {
+									s = {
+											["th"] = 14,
+											["tt"] = "s",
+											["lv"] = {"moretrees:date_palm_leaves"},
+											["lw"] = 11,
+											["lh"] = 15,
+											["bx"] = 5,
+											["bn"] = 0,
+											["bw"] = 1,
+											["ft"] = {"moretrees:date_palm_ffruit_trunk","moretrees:date_palm_mfruit_trunk","moretrees:dates_n","moretrees:dates_f0","moretrees:dates_f1","moretrees:dates_f2","moretrees:dates_f3","moretrees:dates_f4","moretrees:dates_m0","moretrees:dates_fn"},
+											["fx"] = 1,
+											["fn"] = 5,
+											["sp"] = "moretrees:date_palm_sapling"
+										}
+									}									
 
 falling_tree_capitator.tree_config["moretrees:spruce_trunk"] = {
 									x = {
