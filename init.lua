@@ -20,25 +20,24 @@ local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 local S = minetest.get_translator(modname)
 
+falling_tree_capitator = {}
+falling_tree_capitator.tree_config = {}
+falling_tree_capitator.bvav_settings = {}
+falling_tree_capitator.bvav_settings.attach_scaling = 30
+falling_tree_capitator.bvav_settings.scaling = 0.667
 -----------------------------------------------------
 --                    Tree Config                  --
 -----------------------------------------------------
-tree_config = {}
---dofile(modpath .. "/i_tree_config_default.lua")
---dofile(modpath .. "/i_tree_config_moretrees.lua")
+dofile(modpath .. "/i_register_tree_element_entity.lua")
 dofile(modpath .. "/i_register_schematic_trees.lua")
+dofile(modpath .. "/i_tree_config_moretrees.lua")
 
---minetest.debug("db: "..dump(tree_config))
-
------------------------------------------------------
-bvav_settings = {}
-bvav_settings.attach_scaling = 30
-bvav_settings.scaling = 0.667
+--minetest.debug("db: "..dump(falling_tree_capitator.tree_config))
 
 -----------------------------------------------------
 --            Tree override on_dig                 --
 -----------------------------------------------------
-for tree_name,def in pairs(tree_config) do
+for tree_name,def in pairs(falling_tree_capitator.tree_config) do
 	if minetest.registered_nodes[tree_name] then
 		minetest.override_item(tree_name,
 			{
@@ -82,130 +81,6 @@ function minetest.throw_item(pos, item, dir, height)
 	return obj
 end
 
-----------------------------------------------------
---               Tree Entity Setup                -- 
-----------------------------------------------------
-minetest.register_entity("falling_tree_capitator:tree_element", {
-	initial_properties = {
-						physical = true,
-						collide_with_objects = false,
-						pointable = false,
-						collisionbox = {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
-						visual = "wielditem",
-						textures = {},
-						automatic_face_movement_dir = 0.0,
-						visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}
-						},
-
-	node = {},
-
-	set_node = function(self, node)
-		self.node = node
-		local prop = {
-			is_visible = true,
-			textures = {node.name},
-			visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}
-		}
-		self.object:set_properties(prop)
-	end,
-
-	get_staticdata = function(self)
-		return self.node.name
-	end,
-
-	on_activate = function(self, staticdata)
-		self.object:set_armor_groups({immortal=1})
-		if staticdata then
-			self:set_node({name=staticdata})
-		end
-		minetest.after(0,function()
-			
-			if self.parent ~= nil and self.relative ~= nil then
-				self.object:set_attach(self.parent, "", {x=self.relative.x,y=self.relative.y,z=self.relative.z}, {x=0,y=0,z=0})
-				self.object:set_properties({visual_size = {x=bvav_settings.scaling*3, y=bvav_settings.scaling*3}})
-				--self.object:set_properties({})
-			else
-				--this fixes issues with scaling
-				self.object:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
-
-			end
-		end)
-	end,
-	rotation = vector.new(0,0,0),
-	on_step = function(self, dtime)
-		
-		if self.rotator and self.rotate_dir then
-			local current_rot = self.object:get_rotation()
-			
-			-- Throw items on ground that made up parts of the tree:
-			-- logs, leaves, sticks,saplings and fruit/attachments
-			
-			if math.abs(current_rot.x) > math.pi/2 or math.abs(current_rot.z) > math.pi/2 then
-			
-				-- Create a table of all items that may need throwing as result of the
-				-- tree being cut down. This includes adding sticks(1/10 leaves) and saplings(1/20 leaves)
-				-- note The below only throws 1/10 of the actual leaf nodes in the tree.
-				
-				local tree_type = self.ttype
-				local throw_ref_table = {["logs"] = self.logs,
-				                         ["leaf"] = tree_config[self.node.name][tree_type].lv,
-										 ["fruit"] = tree_config[self.node.name][tree_type].ft}
-				local throw_parts = {}				
-				local throw_parts2={}
-				local leaf_total = 0
-
-				
-				for k,obj_tab in pairs(throw_ref_table) do
-				
-					if type(obj_tab) == "table" then
-						for k2,name in pairs(obj_tab) do						
-							
-							if k == "leaf" then
-								leaf_total = leaf_total + self[name]
-								throw_parts[name]=self[name]/10
-								
-							else 
-								throw_parts[name]=self[name]
-							end
-							
-						end
-										
-					else
-						throw_parts[self.node.name]=obj_tab
-					end
-				end
-				
-				throw_parts[tree_config[self.node.name][tree_type].sp] = leaf_total/20						
-				throw_parts["default:stick"] = leaf_total/10
-
-				-- Loop through the above table and use throw_item to distribute the items.
-					for node_name,node_num in pairs(throw_parts) do
-					    -- "if" misses fruit if the name is set to "0"
-						if node_name ~= 0 then
-							for i = 1,node_num do
-								local pos = self.object:get_pos()
-								minetest.throw_item(pos,{name=node_name},self.rotate_dir,tree_config[self.node.name][tree_type].th)
-							end
-						end					
-					end
-
-				minetest.sound_play("tree_thud",{pos=self.object:get_pos()})
-				self.object:remove()
-			end
-			
-			if self.rotate_dir.x ~= 0 then
-				current_rot.x = current_rot.x + (dtime/(self.rotate_dir.x*2.82))
-			elseif self.rotate_dir.z ~= 0 then
-				current_rot.z = current_rot.z + (dtime/(self.rotate_dir.z*2.82))
-			end
-			self.object:set_rotation(current_rot)
-		else
-			if not self.parent or not self.parent:get_luaentity() then
-				self.object:remove()
-			end
-		end
-	end,
-})
 
 
 function spawn_bvav_element(p, node)
@@ -346,7 +221,7 @@ it simplifies checks later on.
 		end
 	
 	-- Check from largest trunk size to smallest trunk size
-		if tree_config[tree_name]["t"] then
+		if falling_tree_capitator.tree_config[tree_name]["t"] then
 			for k,v in pairs(trp_trk) do			
 				if type(cross_arr[v[1]]) =="table" and 
 				   type(cross_arr[v[2]]) =="table" and
@@ -364,7 +239,7 @@ it simplifies checks later on.
 			end
 		end
 
-		if type(trunk_pieces) ~= "table" and tree_config[tree_name]["x"] then
+		if type(trunk_pieces) ~= "table" and falling_tree_capitator.tree_config[tree_name]["x"] then
 			for k,v in pairs(crs_trk) do
 				if type(cross_arr[v[1]]) =="table" and 
 				   type(cross_arr[v[2]]) =="table" and
@@ -377,7 +252,7 @@ it simplifies checks later on.
 			end						
 		end
 		
-		if type(trunk_pieces) ~= "table" and tree_config[tree_name]["d"] then			
+		if type(trunk_pieces) ~= "table" and falling_tree_capitator.tree_config[tree_name]["d"] then			
 			for k,v in pairs(dbl_trk) do			
 				if type(cross_arr[v[1]]) =="table" and 
 				   type(cross_arr[v[2]]) =="table" and 
@@ -394,17 +269,17 @@ it simplifies checks later on.
 		
 		 local tree = tree_name
 		 
-		tree_h = tree_config[tree][trunk_pieces.type].th
-		tree_t = tree_config[tree][trunk_pieces.type].tt
-		leaf_n = tree_config[tree][trunk_pieces.type].lv
-		leaf_w = tree_config[tree][trunk_pieces.type].lw
-		leaf_h = tree_config[tree][trunk_pieces.type].lh
-		brch_h = tree_config[tree][trunk_pieces.type].bx
-		brch_l = tree_config[tree][trunk_pieces.type].bn
-		brch_w = tree_config[tree][trunk_pieces.type].bw
-		frut_n = tree_config[tree][trunk_pieces.type].ft
-		frut_h = tree_config[tree][trunk_pieces.type].fx
-		frut_l = tree_config[tree][trunk_pieces.type].fn
+		tree_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].th
+		tree_t = falling_tree_capitator.tree_config[tree][trunk_pieces.type].tt
+		leaf_n = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lv
+		leaf_w = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lw
+		leaf_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].lh
+		brch_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bx
+		brch_l = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bn
+		brch_w = falling_tree_capitator.tree_config[tree][trunk_pieces.type].bw
+		frut_n = falling_tree_capitator.tree_config[tree][trunk_pieces.type].ft
+		frut_h = falling_tree_capitator.tree_config[tree][trunk_pieces.type].fx
+		frut_l = falling_tree_capitator.tree_config[tree][trunk_pieces.type].fn
 		
 	-- write related node positions to all nodes meta plus tree trunk type,  
 	-- skip ["type"] field using ipairs as not a position
@@ -422,17 +297,17 @@ it simplifies checks later on.
 		local rel_pos2 = minetest.deserialize(temp_p_t)			
 		local tree = tree_name
 		
-			tree_h = tree_config[tree][rel_pos2.type].th
-			tree_t = tree_config[tree][rel_pos2.type].tt
-			leaf_n = tree_config[tree][rel_pos2.type].lv
-			leaf_w = tree_config[tree][rel_pos2.type].lw
-			leaf_h = tree_config[tree][rel_pos2.type].lh
-			brch_h = tree_config[tree][rel_pos2.type].bx
-			brch_l = tree_config[tree][rel_pos2.type].bn
-			brch_w = tree_config[tree][rel_pos2.type].bw
-			frut_n = tree_config[tree][rel_pos2.type].ft
-			frut_h = tree_config[tree][rel_pos2.type].fx
-			frut_l = tree_config[tree][rel_pos2.type].fn	
+			tree_h = falling_tree_capitator.tree_config[tree][rel_pos2.type].th
+			tree_t = falling_tree_capitator.tree_config[tree][rel_pos2.type].tt
+			leaf_n = falling_tree_capitator.tree_config[tree][rel_pos2.type].lv
+			leaf_w = falling_tree_capitator.tree_config[tree][rel_pos2.type].lw
+			leaf_h = falling_tree_capitator.tree_config[tree][rel_pos2.type].lh
+			brch_h = falling_tree_capitator.tree_config[tree][rel_pos2.type].bx
+			brch_l = falling_tree_capitator.tree_config[tree][rel_pos2.type].bn
+			brch_w = falling_tree_capitator.tree_config[tree][rel_pos2.type].bw
+			frut_n = falling_tree_capitator.tree_config[tree][rel_pos2.type].ft
+			frut_h = falling_tree_capitator.tree_config[tree][rel_pos2.type].fx
+			frut_l = falling_tree_capitator.tree_config[tree][rel_pos2.type].fn	
 	end
 
 							    -- name 
@@ -614,11 +489,11 @@ it simplifies checks later on.
 							else
 								local child = spawn_bvav_element(npos_t, {name=tree_name})
 								child:get_luaentity().parent = parent			
-								child:get_luaentity().relative = {x=(npos_t.x - t_cent.x )* bvav_settings.attach_scaling,
-																  y=y * bvav_settings.attach_scaling,
-																  z=(npos_t.z-t_cent.z)* bvav_settings.attach_scaling}
+								child:get_luaentity().relative = {x=(npos_t.x - t_cent.x )* falling_tree_capitator.bvav_settings.attach_scaling,
+																  y=y * falling_tree_capitator.bvav_settings.attach_scaling,
+																  z=(npos_t.z-t_cent.z)* falling_tree_capitator.bvav_settings.attach_scaling}
 								child:set_attach(parent, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
-								child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
+								child:set_properties({visual_size = {x=falling_tree_capitator.bvav_settings.scaling, y=falling_tree_capitator.bvav_settings.scaling}})
 								parent:get_luaentity().logs = parent:get_luaentity().logs + 1
 							end
 						end
@@ -649,9 +524,9 @@ it simplifies checks later on.
 						local z = l_pos.z - tp_pos.z
 						local child = spawn_bvav_element(l_pos, {name=v2})
 						child:get_luaentity().parent = parent			
-						child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
-						child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
-						child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
+						child:get_luaentity().relative = {x=x * falling_tree_capitator.bvav_settings.attach_scaling,y=y * falling_tree_capitator.bvav_settings.attach_scaling,z=z * falling_tree_capitator.bvav_settings.attach_scaling}
+						child:set_attach(parent, "", {x=x * falling_tree_capitator.bvav_settings.attach_scaling,y=y * falling_tree_capitator.bvav_settings.attach_scaling,z=z * falling_tree_capitator.bvav_settings.attach_scaling}, {x=0,y=0,z=0})
+						child:set_properties({visual_size = {x=falling_tree_capitator.bvav_settings.scaling, y=falling_tree_capitator.bvav_settings.scaling}})
 						parent:get_luaentity()[v2] = parent:get_luaentity()[v2] + 1
 					end	
 				end			
@@ -666,9 +541,9 @@ it simplifies checks later on.
 					local z = l_pos.z - tp_pos.z
 					local child = spawn_bvav_element(l_pos, {name=v[1]})
 					child:get_luaentity().parent = parent			
-					child:get_luaentity().relative = {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}
-					child:set_attach(parent, "", {x=x * bvav_settings.attach_scaling,y=y * bvav_settings.attach_scaling,z=z * bvav_settings.attach_scaling}, {x=0,y=0,z=0})
-					child:set_properties({visual_size = {x=bvav_settings.scaling, y=bvav_settings.scaling}})
+					child:get_luaentity().relative = {x=x * falling_tree_capitator.bvav_settings.attach_scaling,y=y * falling_tree_capitator.bvav_settings.attach_scaling,z=z * falling_tree_capitator.bvav_settings.attach_scaling}
+					child:set_attach(parent, "", {x=x * falling_tree_capitator.bvav_settings.attach_scaling,y=y * falling_tree_capitator.bvav_settings.attach_scaling,z=z * falling_tree_capitator.bvav_settings.attach_scaling}, {x=0,y=0,z=0})
+					child:set_properties({visual_size = {x=falling_tree_capitator.bvav_settings.scaling, y=falling_tree_capitator.bvav_settings.scaling}})
 					parent:get_luaentity()[k] = parent:get_luaentity()[k] + 1
 				end
 			end

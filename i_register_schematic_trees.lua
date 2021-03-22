@@ -6,112 +6,126 @@ local schem_table= {}                                                           
 
 y = 0
 
-for dec_name,defs in pairs(minetest.registered_decorations) do	
+--[[for dec_name,defs in pairs(minetest.registered_decorations) do	
 	if string.find(dec_name, "tree") then
-		minetest.debug(dec_name)
+		minetest.debug("just name: "..dec_name)
 	end
-end
+end]]--
 
 for dec_name,defs in pairs(minetest.registered_decorations) do
-	if string.find(dec_name, "tree") then
+	if string.find(dec_name, "tree") and not string.find(dec_name, "sapling") then
 		local d_name                                                            -- Decoration name
 		local size                                                              -- Schematic dimensions, standard pos format eg (x=5,y=12,z=5)
 		local leaves = {}                                                       -- Table to store leaf node names
 		local fruit  = {}                                                       -- Table to store fruit/atatched node names
 		local trunk = ""
 		local schematic	
-		--minetest.debug(dec_name)
+
 		local schem_filepath = defs.schematic                                   -- file path to schematic mts binary file
 		
 		if type(schem_filepath) == "table" then                                 -- some schematics stored as lua tables                           
-			schematic = schem_filepath
+			schematic = schem_filepath		
 		else		
 			schematic = minetest.read_schematic(schem_filepath, "all")          -- Reads in all probabilities of nodes from .mts file
 		end
-		size = schematic.size                                                   -- stored in standard pos format eg (x=5,y=12,z=5)
-		d_name = dec_name
-		local ts = ""                                                           -- ts = (t)emporary (s)tring variable
-		local nt_name                                                           -- Node type name used for L, T, A, F
-		local sc_lay = 1
-		schem_table[d_name]={}
-		local grps = {}
-		local grp = {}
 	
-		for i = 1,#schematic.data do                                            -- Read-in every defined node in schematic
-			local temp_name = schematic.data[i].name
+		if schematic ~= nil then 			
+			size = schematic.size                                                   -- stored in standard pos format eg (x=5,y=12,z=5)
+			d_name = dec_name
+			local ts = ""                                                           -- ts = (t)emporary (s)tring variable
+			local nt_name                                                           -- Node type name used for L, T, A, F
+			local sc_lay = 1
+			schem_table[d_name]={}
+			local grps = {}
+			local grp = {}
+		
+			for i = 1,#schematic.data do                                            -- Read-in every defined node in schematic
+				local temp_name = schematic.data[i].name
 			
-			if not grp[temp_name] then 
+				if not minetest.registered_nodes[temp_name] then                    -- Any node not registered treat as air.
+					temp_name = "air"
+				end	
+				
 				grps[temp_name] = minetest.registered_nodes[temp_name].groups
 				grp = grps[temp_name]                                           -- Get the groups our current specified schematic node has
-			else
-				grp = grps[temp_name]
-			
-			end
+				
+				--[[old redundant code
+				if not grp[temp_name] then 
+										
+					grps[temp_name] = minetest.registered_nodes[temp_name].groups
+					grp = grps[temp_name]                                           -- Get the groups our current specified schematic node has
+				else
+					grp = grps[temp_name]
+				
+				end]]--
 
-			if grp.leaves == 1 then                                             -- Check Leaves
-				nt_name = "L"
-				leaves[temp_name] = 1                                           -- Far quicker to set to key, than use a loop 
+				if grp.leaves == 1 then                                             -- Check Leaves
+					nt_name = "L"
+					leaves[temp_name] = 1                                           -- Far quicker to set to key, than use a loop 
+					
+				elseif grp.tree == 1 then                                           -- Check tree/trunk/log etc
+					nt_name = "T"
+					trunk = temp_name
 				
-			elseif grp.tree == 1 then                                           -- Check tree/trunk/log etc
-				nt_name = "T"
-				trunk = temp_name
-				
-			elseif string.find(temp_name, "air") then                           -- Air has no groups so I just use the name check
-				nt_name = "A"
-				
-			else                                                                -- If its not one of the three above then for trees it must be fruit/attachments
-				nt_name = "F"
-				fruit[temp_name]=1
-			end
-            -------------------------------------------------------------------------------------
-            --   The block of code below takes the nt_name and inserts it into schem_table     --
-            --    However it stores them as each sc_lay = a whole layer as a single string     --
-            --  formated as: AAAAA/nAAAAA/nAAAAA/nAAAAA/nAAAAA, this allows for debugging and  --
-            --       is easier to find some settings from than a full table structure.         --
-            --   This also changes slices from Y vertical slices to X/Z horizontal slices      --
-            -- The overall "for" loop "i=i, #schematic.data" is moving through the Y slices    --
-            -- as we process through each Y slice we are actually get the 1st (then 2nd, 3rd..)--
-            -- row of each X/z horizontal layer. So code below assembles the XZ slices slowly  --
-            -- as each Y slice is processed.                                                   -- 
-            -------------------------------------------------------------------------------------
-			
-			if i/schematic.size.x ~= math.floor(i/schematic.size.x) then        -- if it dosent divide evenly we arent at the end of a row
-				ts = ts.." "..nt_name
-			else                                                                -- if it divides we are at the end of a row
-				ts = ts.." "..nt_name                                           -- Add our end value
-				
-				if sc_lay < schematic.size.y then                               -- if sc_lay is less than schematic y size we are still processing that X row through all X layers                                                    
-					if schem_table[d_name][sc_lay] == nil then                  -- A check do we have any data in this X/Z layer yet                      
-						schem_table[d_name][sc_lay] =ts.."\n"                   -- If not add the data
-					else
-						schem_table[d_name][sc_lay] = schem_table[d_name][sc_lay]..ts.."\n" -- If we do then append new row of layer data to existing data
-					end
-					ts = ""                                                     -- Reset our ts string to blank
-					sc_lay=sc_lay+1                                             -- Add one to our layer counter as next row belongs on the next horizontal layer up
-				else                                                            -- Once we are at our last node on our last X layer vertically we write that data and then reset all
-					if schem_table[d_name][sc_lay] == nil then                  -- counters as the next lot of data represents next Y slice ie Moving from "Y slice 1" to "Y slice 2"
-					   schem_table[d_name][sc_lay] =ts.."\n"
-					else
-						schem_table[d_name][sc_lay] = schem_table[d_name][sc_lay]..ts.."\n"
-					end
-					sc_lay = 1                                                  -- reset our layer counter
-					ts = ""                                                     -- naturally blank our temp string
+				elseif grp.soil == 1 then                                           -- Check for Soil replace with air
+					nt_name = "A"
+					
+				elseif string.find(temp_name, "air") then                           -- Air has no groups so I just use the name check
+					nt_name = "A"
+					
+				else                                                                -- If its not one of the three above then for trees it must be fruit/attachments
+					nt_name = "F"
+					fruit[temp_name]=1
 				end
-			end
-		end		
-		schem_table[d_name]["size"] = size                                      -- store the size value for the tree
-		schem_table[d_name]["leaves"] = leaves                                  -- store leave(s) node name
-		schem_table[d_name]["fruit"] = fruit                                    -- store fruit(s) node name
-		schem_table[d_name]["trunk"] = trunk                                    -- store trunk node name
---[[			
-	minetest.debug(dump(schem_table[d_name]["leaves"]))                         -- for debugging assistance
-	minetest.debug(dump(schem_table[d_name]["fruit"]))
-	for k,v in ipairs(schem_table[d_name]) do
-		minetest.debug(d_name.." X/Z Slice: Y= "..k.." of "..schem_table[d_name].size.y)
-		minetest.debug("\n"..v)
-	end
-]]--		 
-	
+				-------------------------------------------------------------------------------------
+				--   The block of code below takes the nt_name and inserts it into schem_table     --
+				--    However it stores them as each sc_lay = a whole layer as a single string     --
+				--  formated as: AAAAA/nAAAAA/nAAAAA/nAAAAA/nAAAAA, this allows for debugging and  --
+				--       is easier to find some settings from than a full table structure.         --
+				--   This also changes slices from Y vertical slices to X/Z horizontal slices      --
+				-- The overall "for" loop "i=i, #schematic.data" is moving through the Y slices    --
+				-- as we process through each Y slice we are actually get the 1st (then 2nd, 3rd..)--
+				-- row of each X/z horizontal layer. So code below assembles the XZ slices slowly  --
+				-- as each Y slice is processed.                                                   -- 
+				-------------------------------------------------------------------------------------
+				
+				if i/schematic.size.x ~= math.floor(i/schematic.size.x) then        -- if it dosent divide evenly we arent at the end of a row
+					ts = ts.." "..nt_name
+				else                                                                -- if it divides we are at the end of a row
+					ts = ts.." "..nt_name                                           -- Add our end value
+					
+					if sc_lay < schematic.size.y then                               -- if sc_lay is less than schematic y size we are still processing that X row through all X layers                                                    
+						if schem_table[d_name][sc_lay] == nil then                  -- A check do we have any data in this X/Z layer yet                      
+							schem_table[d_name][sc_lay] =ts.."\n"                   -- If not add the data
+						else
+							schem_table[d_name][sc_lay] = schem_table[d_name][sc_lay]..ts.."\n" -- If we do then append new row of layer data to existing data
+						end
+						ts = ""                                                     -- Reset our ts string to blank
+						sc_lay=sc_lay+1                                             -- Add one to our layer counter as next row belongs on the next horizontal layer up
+					else                                                            -- Once we are at our last node on our last X layer vertically we write that data and then reset all
+						if schem_table[d_name][sc_lay] == nil then                  -- counters as the next lot of data represents next Y slice ie Moving from "Y slice 1" to "Y slice 2"
+						   schem_table[d_name][sc_lay] =ts.."\n"
+						else
+							schem_table[d_name][sc_lay] = schem_table[d_name][sc_lay]..ts.."\n"
+						end
+						sc_lay = 1                                                  -- reset our layer counter
+						ts = ""                                                     -- naturally blank our temp string
+					end
+				end
+			end		
+			schem_table[d_name]["size"] = size                                      -- store the size value for the tree
+			schem_table[d_name]["leaves"] = leaves                                  -- store leave(s) node name
+			schem_table[d_name]["fruit"] = fruit                                    -- store fruit(s) node name
+			schem_table[d_name]["trunk"] = trunk                                    -- store trunk node name
+	--[[			
+		minetest.debug(dump(schem_table[d_name]["leaves"]))                         -- for debugging assistance
+		minetest.debug(dump(schem_table[d_name]["fruit"]))
+		for k,v in ipairs(schem_table[d_name]) do
+			minetest.debug(d_name.." X/Z Slice: Y= "..k.." of "..schem_table[d_name].size.y)
+			minetest.debug("\n"..v)
+		end
+	]]--		 
+		end
 	end
 end
 
@@ -408,8 +422,8 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 	end
 
 	
---[[ -- debugging	
-
+-- debugging	
+--[[
 	local tree_sum = {[def_str.trunk] = {
 									["th"] = tree.th,
 									["tt"] = tree.tt,
@@ -432,39 +446,39 @@ local th_start = math.ceil(def_str.size.y * 0.25)
  
 	end
 	 tree_debug = string.gsub(tree_debug, "return", "")
-	 minetest.debug("\n"..def_str.trunk..tree_debug) ]]--
-
+	 minetest.debug("\n"..def_str.trunk..tree_debug) 
+]]--
 -----------------------------------------------------------
 -- Check if tree_name and tree.tt are already registered --
 --    and either update values or register new record    --
 -----------------------------------------------------------		
 
-	if not tree_config[def_str.trunk] then                                   -- Check if tree top table exists if not create 
-		tree_config[def_str.trunk] = {}		
+	if not falling_tree_capitator.tree_config[def_str.trunk] then                                   -- Check if tree top table exists if not create 
+		falling_tree_capitator.tree_config[def_str.trunk] = {}		
 	end 
 
 	
-	if not tree_config[def_str.trunk][tree.tt] then                              -- If tree already has a config record we need to check
+	if not falling_tree_capitator.tree_config[def_str.trunk][tree.tt] then                              -- If tree already has a config record we need to check
 		
-		tree_config[def_str.trunk][tree.tt] = {} 
-		tree_config[def_str.trunk][tree.tt]["th"] = tree.th
-		tree_config[def_str.trunk][tree.tt]["tt"] = tree.tt
-		tree_config[def_str.trunk][tree.tt]["lv"] = tree.lv
-		tree_config[def_str.trunk][tree.tt]["lw"] = tree.lw
-		tree_config[def_str.trunk][tree.tt]["lh"] = tree.lh
-		tree_config[def_str.trunk][tree.tt]["bx"] = tree.bx
-		tree_config[def_str.trunk][tree.tt]["bn"] = tree.bn
-		tree_config[def_str.trunk][tree.tt]["bw"] = tree.bw
-		tree_config[def_str.trunk][tree.tt]["ft"] = tree.ft
-		tree_config[def_str.trunk][tree.tt]["fx"] = tree.fx
-		tree_config[def_str.trunk][tree.tt]["fn"] = tree.fn
-		tree_config[def_str.trunk][tree.tt]["sp"] = tree.sp
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt] = {} 
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["th"] = tree.th
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["tt"] = tree.tt
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["lv"] = tree.lv
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["lw"] = tree.lw
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["lh"] = tree.lh
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["bx"] = tree.bx
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["bn"] = tree.bn
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["bw"] = tree.bw
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["ft"] = tree.ft
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["fx"] = tree.fx
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["fn"] = tree.fn
+		falling_tree_capitator.tree_config[def_str.trunk][tree.tt]["sp"] = tree.sp
 
-		--minetest.debug("db: "..dump(tree_config))
+		--minetest.debug("db: "..dump(falling_tree_capitator.tree_config))
 		
-	elseif tree_config[def_str.trunk][tree.tt] then
+	elseif falling_tree_capitator.tree_config[def_str.trunk][tree.tt] then
 
-		local tree_config_data = tree_config[def_str.trunk][tree.tt]
+		local tree_config_data = falling_tree_capitator.tree_config[def_str.trunk][tree.tt]
 		for k,v in pairs(tree_config_data) do
 			local rev_tab = {}
 			local fin_tab = {}
@@ -506,7 +520,7 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		end
 		]]--	
 
-		for k,v in pairs(tree_config) do
+		for k,v in pairs(falling_tree_capitator.tree_config) do
 		
 			minetest.debug(k)
 			
@@ -519,19 +533,19 @@ local th_start = math.ceil(def_str.size.y * 0.25)
 		end
 		
 		
-		tree_config[def_str.trunk..count] = {}
-		tree_config[def_str.trunk..count]["th"] = tree.th
-		tree_config[def_str.trunk..count]["tt"] = tree.tt
-		tree_config[def_str.trunk..count]["lv"] = tree.lv
-		tree_config[def_str.trunk..count]["lw"] = tree.lw
-		tree_config[def_str.trunk..count]["lh"] = tree.lh
-		tree_config[def_str.trunk..count]["bx"] = tree.bx
-		tree_config[def_str.trunk..count]["bn"] = tree.bn
-		tree_config[def_str.trunk..count]["bw"] = tree.bw
-		tree_config[def_str.trunk..count]["ft"] = tree.ft
-		tree_config[def_str.trunk..count]["fx"] = tree.fx
-		tree_config[def_str.trunk..count]["fn"] = tree.fn
-		tree_config[def_str.trunk..count]["sp"] = tree.sp
+		falling_tree_capitator.tree_config[def_str.trunk..count] = {}
+		falling_tree_capitator.tree_config[def_str.trunk..count]["th"] = tree.th
+		falling_tree_capitator.tree_config[def_str.trunk..count]["tt"] = tree.tt
+		falling_tree_capitator.tree_config[def_str.trunk..count]["lv"] = tree.lv
+		falling_tree_capitator.tree_config[def_str.trunk..count]["lw"] = tree.lw
+		falling_tree_capitator.tree_config[def_str.trunk..count]["lh"] = tree.lh
+		falling_tree_capitator.tree_config[def_str.trunk..count]["bx"] = tree.bx
+		falling_tree_capitator.tree_config[def_str.trunk..count]["bn"] = tree.bn
+		falling_tree_capitator.tree_config[def_str.trunk..count]["bw"] = tree.bw
+		falling_tree_capitator.tree_config[def_str.trunk..count]["ft"] = tree.ft
+		falling_tree_capitator.tree_config[def_str.trunk..count]["fx"] = tree.fx
+		falling_tree_capitator.tree_config[def_str.trunk..count]["fn"] = tree.fn
+		falling_tree_capitator.tree_config[def_str.trunk..count]["sp"] = tree.sp
 
 	end
 
