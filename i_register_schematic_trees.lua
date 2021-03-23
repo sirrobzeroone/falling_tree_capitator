@@ -104,14 +104,19 @@ for dec_name,defs in pairs(minetest.registered_decorations) do
 			schem_table[d_name]["leaves"] = leaves                                  -- store leave(s) node name
 			schem_table[d_name]["fruit"] = fruit                                    -- store fruit(s) node name
 			schem_table[d_name]["trunk"] = trunk                                    -- store trunk node name
-			
---[[	minetest.debug(dump(schem_table[d_name]["leaves"]))                         -- for debugging assistance
+
+--------------------------------------------------------------------
+-- for debugging assistance will output each X/Z slice into debug --	
+--------------------------------------------------------------------
+--[[		
+		minetest.debug(dump(schem_table[d_name]["leaves"]))                         
 		minetest.debug(dump(schem_table[d_name]["fruit"]))
 		for k,v in ipairs(schem_table[d_name]) do
 			minetest.debug(d_name.." X/Z Slice: Y= "..k.." of "..schem_table[d_name].size.y)
 			minetest.debug("\n"..v)
-		end]]--
-		 
+		end
+]]--		
+-------------------------------------------------------------------		 
 		end
 	end
 end

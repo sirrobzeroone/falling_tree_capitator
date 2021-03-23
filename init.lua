@@ -30,7 +30,7 @@ falling_tree_capitator.bvav_settings.scaling = 0.667
 -----------------------------------------------------
 dofile(modpath .. "/i_register_tree_element_entity.lua")
 dofile(modpath .. "/i_register_schematic_trees.lua")
---dofile(modpath .. "/i_tree_config_moretrees.lua")
+dofile(modpath .. "/i_tree_config_moretrees.lua")
 
 --minetest.debug("db: "..dump(falling_tree_capitator.tree_config))
 
