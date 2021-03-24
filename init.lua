@@ -20,6 +20,8 @@ local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 local S = minetest.get_translator(modname)
 
+-- Global table named the same as mod to allow for easier
+-- identification if someone is looking at all globals loaded.
 falling_tree_capitator = {}
 falling_tree_capitator.tree_config = {}
 falling_tree_capitator.bvav_settings = {}
@@ -28,9 +30,10 @@ falling_tree_capitator.bvav_settings.scaling = 0.667
 -----------------------------------------------------
 --                    Tree Config                  --
 -----------------------------------------------------
-dofile(modpath .. "/i_register_tree_element_entity.lua")
+dofile(modpath .. "/i_functions_utility.lua")
+dofile(modpath .. "/i_register_tree_entity.lua")
 dofile(modpath .. "/i_register_schematic_trees.lua")
-dofile(modpath .. "/i_tree_config_moretrees.lua")
+dofile(modpath .. "/i_register_moretrees.lua")
 
 --minetest.debug("db: "..dump(falling_tree_capitator.tree_config))
 
@@ -40,47 +43,32 @@ dofile(modpath .. "/i_tree_config_moretrees.lua")
 for tree_name,def in pairs(falling_tree_capitator.tree_config) do
 	if minetest.registered_nodes[tree_name] then
 		minetest.override_item(tree_name,
-			{
+			{	
+			on_punch = function(pos, node, player, pointed_thing)
+						-- we need pointed thing from on_punch as its more accurate
+						-- than minetest.raycast.
+						local n_meta = minetest.get_meta(pos)
+						n_meta:set_string("fall_tree_cap_pt",minetest.serialize(pointed_thing))
+					  end,
+			
 			on_dig = function(pos, node, digger)
-				local dir = minetest.facedir_to_dir(minetest.dir_to_facedir(minetest.yaw_to_dir(digger:get_look_horizontal()+(math.pi/2))))
-				bvav_create_vessel(pos,dir,tree_name,node,digger)		
-			end,	
+						local n_meta = minetest.get_meta(pos)
+						local temp_n_meta = n_meta:get_string("fall_tree_cap_pt")
+						local pointed_thing = minetest.deserialize(temp_n_meta)				
+						local intersection_normal = falling_tree_capitator.intersect_normal(digger,pointed_thing)
+						
+					-- intersection_normal provides the node face dir eg facing +/- X/Z/Y. However
+					-- this is used later to rotate the entity which rotates around that axis.
+					-- So if the face chopped is an X face and the player is facing the tree
+					-- the tree will fall to the left (rotating around X axis). As we want the tree 
+					-- to fall towards the cut face we need to reverse the X/Z values, we must also
+					-- reverse +- for intersection_normal.z.				
+						local dir = {x=-1*intersection_normal.z, y=intersection_normal.y,z=intersection_normal.x}
+						bvav_create_vessel(pos,dir,tree_name,node,digger)		
+					 end,	
 		})
 	end
 end
-
-----------------------------------------------------
---     Function: Throw Chopped Tree Items         -- 
-----------------------------------------------------
-function minetest.throw_item(pos, item, dir, height)
-	-- Take item in any format
-	local stack = ItemStack(item)
-	local obj = minetest.add_entity(pos, "__builtin:item")
-	local pos_f = {x=-1, y=3, z=-1}
-	local pos_t = {x=2, y=6, z=2}
-	-- Don't use obj if it couldn't be added to the map.
-	if obj then
-		obj:get_luaentity():set_item(stack:to_string())			
-			if dir.x > 0 then
-				pos_t.z = -1.25*height
-				
-			elseif dir.x < 0 then
-				pos_t.z = 1.25*height	
-				
-			elseif dir.z > 0 then
-				pos_t.x = 1.25*height
-				
-			else 
-				pos_t.x = -1.25*height
-			end		
-		local x=math.random(pos_f.x,pos_t.x)*math.random()
-		local y=math.random(pos_f.y,pos_t.y)
-		local z=math.random(pos_f.z,pos_t.z)*math.random()
-		obj:setvelocity({x=x, y=y, z=z})
-	end
-	return obj
-end
-
 
 
 function spawn_bvav_element(p, node)
@@ -94,12 +82,11 @@ function bvav_create_vessel(pos,dir,tree_name,node,digger)
 	local parent	
 	local top_y = 0
 	local h_chk = 0
-	local pos_cut = pos
 	local pos_top
 	local x_pos
 	local pos2 = pos
-	local fall = false
-	local first_log = false
+	local is_fall = false
+	local is_first_log = false
 	local trunk_pieces
 	
 	local tree_h
@@ -194,7 +181,7 @@ it simplifies checks later on.
 
 	local node_meta = minetest.get_meta(pos)
 	if node_meta:get_string("fall_tree_cap") == "" then   -- first node cut if not single
-		first_log = true
+		is_first_log = true
 		local offset_val = {     --Bottom Left \/
 							{["x"] = -2, ["z"] = -2},{["x"] = -1, ["z"] = -2},{["x"] = 0, ["z"] = -2},{["x"] = 1, ["z"] = -2},{["x"] = 2, ["z"] = -2},
 							{["x"] = -2, ["z"] = -1},{["x"] = -1, ["z"] = -1},{["x"] = 0, ["z"] = -1},{["x"] = 1, ["z"] = -1},{["x"] = 2, ["z"] = -1},
@@ -202,12 +189,12 @@ it simplifies checks later on.
 							{["x"] = -2, ["z"] = 1} ,{["x"] = -1, ["z"] = 1} ,{["x"] = 0, ["z"] = 1} ,{["x"] = 1, ["z"] = 1} ,{["x"] = 2, ["z"] = 1},
 							{["x"] = -2, ["z"] = 2} ,{["x"] = -1, ["z"] = 2} ,{["x"] = 0, ["z"] = 2} ,{["x"] = 1, ["z"] = 2} ,{["x"] = 2, ["z"] = 2},
 						   }                                                                                                     -- Top Right /\			
-		local dbl_trk ={{8,9,14},{7,8,12},{12,17,18},{14,18,19}}           -- array positions for valid double trunk
-		local crs_trk ={{14,9,15,19},{18,17,19,23},{12,7,11,17},{8,3,7,9}} -- as above cross trunk/1st value center of trunk
-		local trp_trk ={{9,3,4,5,8,10,14,15},{19,14,15,18,20,23,24,25},
+		local dbl_trunk ={{8,9,14},{7,8,12},{12,17,18},{14,18,19}}           -- array positions for valid double trunk
+		local crs_trunk ={{14,9,15,19},{18,17,19,23},{12,7,11,17},{8,3,7,9}} 
+		local trp_trunk ={{9,3,4,5,8,10,14,15},{19,14,15,18,20,23,24,25},
 						{17,11,12,16,18,21,22,23},{7,1,2,3,6,8,11,12}, 
 						{12,6,7,8,11,16,17,18},{14,8,9,10,15,18,19,20},
-						{18,12,14,17,19,22,23,24},{8,2,3,4,7,9,12,14}}      -- as above triple trunk/1st value center of trunk
+						{18,12,14,17,19,22,23,24},{8,2,3,4,7,9,12,14}} 
 		local cross_arr = {}
 		
 		-- Assemble our cross section array when a match is found position is stored else 0
@@ -223,7 +210,7 @@ it simplifies checks later on.
 	
 	-- Check from largest trunk size to smallest trunk size
 		if falling_tree_capitator.tree_config[tree_name]["t"] then
-			for k,v in pairs(trp_trk) do			
+			for k,v in pairs(trp_trunk) do			
 				if type(cross_arr[v[1]]) =="table" and 
 				   type(cross_arr[v[2]]) =="table" and
 				   type(cross_arr[v[3]]) =="table" and
@@ -241,7 +228,7 @@ it simplifies checks later on.
 		end
 
 		if type(trunk_pieces) ~= "table" and falling_tree_capitator.tree_config[tree_name]["x"] then
-			for k,v in pairs(crs_trk) do
+			for k,v in pairs(crs_trunk) do
 				if type(cross_arr[v[1]]) =="table" and 
 				   type(cross_arr[v[2]]) =="table" and
 				   type(cross_arr[v[3]]) =="table" and
@@ -254,7 +241,7 @@ it simplifies checks later on.
 		end
 		
 		if type(trunk_pieces) ~= "table" and falling_tree_capitator.tree_config[tree_name]["d"] then			
-			for k,v in pairs(dbl_trk) do			
+			for k,v in pairs(dbl_trunk) do			
 				if type(cross_arr[v[1]]) =="table" and 
 				   type(cross_arr[v[2]]) =="table" and 
 				   type(cross_arr[v[3]]) =="table" then
@@ -270,7 +257,7 @@ it simplifies checks later on.
 		
 		 local tree = tree_name
 		 
-		 -- catch any odd tree finds that dont have a config tree type that matches.
+		 -- catch any odd tree finds that dont have a config tree type that matches
 		 -- and simply set these too default values which result in log/trunk node being
 		 -- treated as an individual node.
 		 if falling_tree_capitator.tree_config[tree][trunk_pieces.type] == nil then   
@@ -329,7 +316,7 @@ it simplifies checks later on.
 
 							    -- name 
 	local tree_parts = {}
-	local tree_parts = {["leaf"]={leaf_n,leaf_h,pos_cut.y,leaf_w},
+	local tree_parts = {["leaf"]={leaf_n,leaf_h,pos.y,leaf_w},
 					    ["logs"]={tree_name,brch_h,brch_l,brch_w},
 						["frut"]={frut_n,frut_h,frut_l,leaf_w}
 					   }
@@ -341,7 +328,7 @@ it simplifies checks later on.
 		
 		local t_pos
 		
-		if first_log then
+		if is_first_log then
 			t_pos = trunk_pieces
 		else
 			local n_meta = minetest.get_meta(pos)
@@ -426,11 +413,11 @@ it simplifies checks later on.
 --       Trunk thickness/last log check            --
 -----------------------------------------------------
 	if tree_t == "s" then
-		fall = true
+		is_fall = true
 		
 	else		
-		local last_log = true			
-			if not first_log then                                -- first_log == true, no change to anything and no checks
+		local is_last_log = true			
+			if not is_first_log then                                -- is_first_log == true, no change to anything and no checks
 			
 				local n_meta = minetest.get_meta(pos)
 				local temp_p_t = n_meta:get_string("fall_tree_cap")
@@ -443,14 +430,14 @@ it simplifies checks later on.
 
 							local t_node = minetest.get_node(pos2).name					
 							if t_node == tree_name then					
-								last_log = false
+								is_last_log = false
 							end					
 						end								
 					end			
 			end
 			
-			if last_log and not first_log then
-				fall = true
+			if is_last_log and not is_first_log then
+				is_fall = true
 			end
 	end
 
@@ -460,7 +447,7 @@ it simplifies checks later on.
 --    may use logs in structures                   --
 -----------------------------------------------------
 
-	if fall == false or 
+	if is_fall == false or 
 	   h_chk <= 1 or
 	   #check_leaf == 0 then	   
 	   -- Does normal node dig

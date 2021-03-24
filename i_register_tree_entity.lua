@@ -100,7 +100,7 @@ minetest.register_entity("falling_tree_capitator:tree_element", {
 								if node_name ~= 0 then
 									for i = 1,node_num do
 										local pos = self.object:get_pos()
-										minetest.throw_item(pos,{name=node_name},self.rotate_dir,falling_tree_capitator.tree_config[self.node.name][tree_type].th)
+										falling_tree_capitator.throw_item(pos,{name=node_name},self.rotate_dir,falling_tree_capitator.tree_config[self.node.name][tree_type].th)
 									end
 								end					
 							end
@@ -115,6 +115,7 @@ minetest.register_entity("falling_tree_capitator:tree_element", {
 						current_rot.z = current_rot.z + (dtime/(self.rotate_dir.z*2.82))
 					end
 					self.object:set_rotation(current_rot)
+					
 				else
 					if not self.parent or not self.parent:get_luaentity() then
 						self.object:remove()
