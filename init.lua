@@ -38,7 +38,7 @@ dofile(modpath .. "/i_register_moretrees.lua")
 --minetest.debug("db: "..dump(falling_tree_capitator.tree_config))
 
 -----------------------------------------------------
---            Tree override on_dig                 --
+--       Tree override on_dig and on_punch         --
 -----------------------------------------------------
 for tree_name,def in pairs(falling_tree_capitator.tree_config) do
 	if minetest.registered_nodes[tree_name] then
@@ -80,14 +80,15 @@ end
 
 function bvav_create_vessel(pos,dir,tree_name,node,digger)
 	local parent	
-	local top_y = 0
-	local h_chk = 0
 	local pos_top
 	local x_pos
+	local trunk_pieces
+	local top_y = 0
+	local h_chk = 0
 	local pos2 = pos
 	local is_fall = false
 	local is_first_log = false
-	local trunk_pieces
+
 	
 	local tree_h
 	local tree_t
