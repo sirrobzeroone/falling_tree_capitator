@@ -43,33 +43,52 @@ dofile(modpath .. "/i_register_moretrees.lua")
 for tree_name,def in pairs(falling_tree_capitator.tree_config) do
 	if minetest.registered_nodes[tree_name] then
 		minetest.override_item(tree_name,
-			{	
-			on_punch = function(pos, node, player, pointed_thing)
-						-- we need pointed thing from on_punch as its more accurate
-						-- than minetest.raycast.
-						local n_meta = minetest.get_meta(pos)
-						n_meta:set_string("fall_tree_cap_pt",minetest.serialize(pointed_thing))
-					  end,
-			
+			{				
 			on_dig = function(pos, node, digger)
-						local n_meta = minetest.get_meta(pos)
-						local temp_n_meta = n_meta:get_string("fall_tree_cap_pt")
-						local pointed_thing = minetest.deserialize(temp_n_meta)				
-						local intersection_normal = falling_tree_capitator.intersect_normal(digger,pointed_thing)
+						local digger_pos = digger:get_pos()
+						local eye_height = digger:get_properties().eye_height
+						local eye_offset = digger:get_eye_offset()
+						digger_pos.y = digger_pos.y + eye_height
+						digger_pos = vector.add(digger_pos, eye_offset)
+						
+						-- get wielded item range 5 is engine default
+						-- order tool/item range >> hand_range >> fallback 5
+						local tool_range = digger:get_wielded_item():get_definition().range	or nil					
+						local hand_range						
+							for key, val in pairs(minetest.registered_items) do								
+								if key == "" then
+									hand_range = val.range or nil
+								end
+							end
+						local wield_range = tool_range or hand_range or 5
+						
+						-- determine ray end position
+						local look_dir = digger:get_look_dir()
+						look_dir = vector.multiply(look_dir, wield_range)
+						local end_pos = vector.add(look_dir, digger_pos)
+
+						-- get pointed_thing
+						local ray = {}
+						local ray = minetest.raycast(digger_pos, end_pos, false, false)
+						local ray_pt = ray:next()
+						
+						local normal = ray_pt.intersection_normal						
 						
 					-- intersection_normal provides the node face dir eg facing +/- X/Z/Y. However
 					-- this is used later to rotate the entity which rotates around that axis.
 					-- So if the face chopped is an X face and the player is facing the tree
 					-- the tree will fall to the left (rotating around X axis). As we want the tree 
 					-- to fall towards the cut face we need to reverse the X/Z values, we must also
-					-- reverse +- for intersection_normal.z.				
-						local dir = {x=-1*intersection_normal.z, y=intersection_normal.y,z=intersection_normal.x}
-						bvav_create_vessel(pos,dir,tree_name,node,digger)		
+					-- reverse +- for intersection_normal.z.
+						local dir = {x=-1*normal.z, y=normal.y,z=normal.x}
+
+						bvav_create_vessel(pos,dir,tree_name,node,digger)
+
+						
 					 end,	
 		})
 	end
 end
-
 
 function spawn_bvav_element(p, node)
 	local obj = core.add_entity(p, "falling_tree_capitator:tree_element")
