@@ -74,6 +74,7 @@ minetest.register_entity("falling_tree_capitator:tree_element", {
 					local grnd = minetest.find_nodes_in_area_under_air({x=n_pos.x,y=n_pos.y - 25,z=n_pos.z}, {x=n_pos.x,y=n_pos.y + 25,z=n_pos.z}, {"group:soil","group:sand","group:stone"})
 					
 					if #grnd == 0 then
+						grnd = {}
 						grnd[1].y = pos.y - 1
 					end
 					
